@@ -23,7 +23,8 @@ namespace SwitchWeapons
 			Disable,
 			Unarmed,
 		}
-		
+
+		#region FIELDS
 		private const float _iconGap = 1f;
 		private const float _iconSize = 32f;
 
@@ -31,14 +32,18 @@ namespace SwitchWeapons
 		private Color _baseColor = new Color(0.5f, 0.5f, 0.5f, 1f);
 
 		private Pawn _pawn = null;
+		#endregion
 
+		#region CONSTRUCTORS
 		public Gizmo_SwitchWeapon(Pawn pawn)
 		{
 			_pawn = pawn;
-			defaultLabel = "SSSW_ForceMeleeLabel".Translate();
-			defaultDesc = "SSSW_ForceMeleeDesc".Translate();
+			defaultLabel = "SSSW_SwitchWeaponsLabel".Translate();
+			defaultDesc = "SSSW_SwitchWeaponsDesc".Translate();
 		}
+		#endregion
 
+		#region OVERRIDES
 		public override GizmoResult GizmoOnGUI(Vector2 topLeft, float maxWidth, GizmoRenderParms parms)
 		{
 			if (_pawn == null)
@@ -133,12 +138,11 @@ namespace SwitchWeapons
 			}
 		}
 
-		public override bool GroupsWith(Gizmo other)
-		{
-			return other is Gizmo_SwitchWeapon;
-		}
+		public override bool GroupsWith(Gizmo other) => other is Gizmo_SwitchWeapon;
+		#endregion
 
-		public bool DrawRangedIcon(Vector2 center)
+		#region PRIVATE METHODS
+		private bool DrawRangedIcon(Vector2 center)
 		{
 			Rect rect = new Rect
 			{
@@ -161,21 +165,10 @@ namespace SwitchWeapons
 				GUI.DrawTexture(rect, TextureResources.ForceRanged);
 			}
 
-			//bool clicked = Widgets.ButtonInvisible(RangedRect, true);
-			//if (clicked)
-			//{
-			//	// Unset forced weapons
-			//	var memory = CompSidearmMemory.GetMemoryCompForPawn(_pawn);
-			//	memory.UnsetForcedWeapon(true);
-
-			//	// Switch to the best ranged weapon
-			//	WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm, Enums.PrimaryWeaponMode.Ranged);
-			//}
-			//return clicked;
 			return Widgets.ButtonInvisible(rect, true);
 		}
 
-		public bool DrawMeleeIcon(Vector2 center)
+		private bool DrawMeleeIcon(Vector2 center)
 		{
 			Rect rect = new Rect
 			{
@@ -197,27 +190,11 @@ namespace SwitchWeapons
 				GUI.color = _baseColor;
 				GUI.DrawTexture(rect, TextureResources.ForceMelee);
 			}
-
-			//bool clicked = Widgets.ButtonInvisible(MeleeRect, true);
-			//if (clicked)
-			//{
-			//	// Unset forced weapons
-			//	var memory = CompSidearmMemory.GetMemoryCompForPawn(_pawn);
-			//	memory.UnsetForcedWeapon(true);
-
-			//	// Switch to the best melee weapon
-			//	WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm, Enums.PrimaryWeaponMode.Melee);
-
-			//	// Set the weapon as forced if it is a melee weapon
-			//	var weapon = _pawn.equipment.Primary;
-			//	if (weapon?.def?.IsMeleeWeapon == true)
-			//		memory.SetWeaponAsForced(weapon.toThingDefStuffDefPair(), true);
-			//}
-			//return clicked;
+			
 			return Widgets.ButtonInvisible(rect, true);
 		}
 
-		public bool DrawDisableIcon(Vector2 center)
+		private bool DrawDisableIcon(Vector2 center)
 		{
 			Rect rect = new Rect
 			{
@@ -239,18 +216,11 @@ namespace SwitchWeapons
 				GUI.color = _baseColor;
 				GUI.DrawTexture(rect, TextureResources.Disable);
 			}
-
-			//bool clicked = Widgets.ButtonInvisible(DisableRect, true);
-			//if (clicked)
-			//{
-			//	// Unset forced weapons
-			//	CompSidearmMemory.GetMemoryCompForPawn(_pawn).UnsetForcedWeapon(true);
-			//}
-			//return clicked;
+			
 			return Widgets.ButtonInvisible(rect, true);
 		}
 
-		public bool DrawUnarmedIcon(Vector2 center)
+		private bool DrawUnarmedIcon(Vector2 center)
 		{
 			Rect rect = new Rect
 			{
@@ -272,21 +242,13 @@ namespace SwitchWeapons
 				GUI.color = _baseColor;
 				GUI.DrawTexture(rect, TextureResources.ForceUnarmed);
 			}
-
-			//bool clicked = Widgets.ButtonInvisible(UnarmedRect, true);
-			//if (clicked)
-			//{
-			//	// Unset forced weapons
-			//	var memory = CompSidearmMemory.GetMemoryCompForPawn(_pawn);
-			//	memory.UnsetForcedWeapon(true);
-
-			//	// Set unarmed as forced
-			//	memory.SetUnarmedAsForced(true);
-			//}
-			//return clicked;
+			
 			return Widgets.ButtonInvisible(rect, true);
 		}
+		#endregion
 
+
+		// Borrowed this method from Simple Sidearms - all credits goes to its author - Thanks!
 		public void DrawGizmoLabel(string labelText, Rect gizmoRect)
 		{
 			var labelHeight = Text.CalcHeight(labelText, gizmoRect.width);
