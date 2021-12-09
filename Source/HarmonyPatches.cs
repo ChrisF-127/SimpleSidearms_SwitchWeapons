@@ -22,17 +22,20 @@ namespace SwitchWeapons
 		{
 			Harmony harmony = new Harmony("syrus.simplesidearms_switchweapons");
 
-			harmony.Patch(
-				AccessTools.Method(typeof(Pawn_DraftController), "GetGizmos"),
-				postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Pawn_DraftController_GetGizmos_PostFix)));
+			harmony.PatchAll();
 		}
+	}
 
-		public static IEnumerable<Gizmo> Pawn_DraftController_GetGizmos_PostFix(IEnumerable<Gizmo> __result, Pawn_DraftController __instance)
+	[HarmonyPatch(typeof(Pawn_DraftController), "GetGizmos")]
+	static class Pawn_DraftController_GetGizmos
+	{
+		[HarmonyPriority(0)]
+		public static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn_DraftController __instance)
 		{
 			var pawn = __instance?.pawn;
 			if (pawn != null
-				&& pawn.Faction?.IsPlayer == true 
-				&& pawn.Drafted 
+				&& pawn.Faction?.IsPlayer == true
+				&& pawn.Drafted
 				&& !pawn.WorkTagIsDisabled(WorkTags.Violent))
 			{
 				yield return new Gizmo_SwitchWeapon(pawn)
