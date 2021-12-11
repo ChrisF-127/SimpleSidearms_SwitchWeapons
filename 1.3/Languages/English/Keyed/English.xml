@@ -10,5 +10,10 @@
 (no effect without a melee weapon)</SSSW_Melee>
 	<SSSW_Unarmed>Unarmed: force unarmed fighting</SSSW_Unarmed>
 	<SSSW_Disable>Preferred: use preferred weapon</SSSW_Disable>
+	
+	<SSSW_Next>Next: switch to next weapon
+(if carrying multiple ranged or melee weapons)</SSSW_Next>
+	<SSSW_Previous>Previous: switch to previous weapon
+(if carrying multiple ranged or melee weapons)</SSSW_Previous>
 
 </LanguageData>

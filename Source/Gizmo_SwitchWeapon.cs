@@ -18,18 +18,29 @@ namespace SwitchWeapons
 		private enum SwitchButtonEnum
 		{
 			None,
+
 			Ranged,
 			Melee,
 			Disable,
 			Unarmed,
+
+			Next,
+			Previous,
 		}
 
 		#region FIELDS
 		private const float _iconGap = 1f;
 		private const float _iconSize = 32f;
 
-		private Color _highlightColor = new Color(0.7f, 0.7f, 0.4f, 1f);
-		private Color _baseColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+		private Color _rangedColor = new Color(0.4f, 0.8f, 0.4f);
+		private Color _disableColor = new Color(0.8f, 0.8f, 0.8f);
+		private Color _meleeColor = new Color(0.8f, 0.4f, 0.4f);
+		private Color _unarmedColor = new Color(0.8f, 0.6f, 0.4f);
+
+		private Color _nextPrevColor = new Color(0.8f, 0.8f, 0.8f);
+
+		private Color _baseColor = new Color(0.5f, 0.5f, 0.5f);
+		private Color _highlightColor = new Color(1.0f, 1.0f, 1.0f);
 
 		private Pawn _pawn = null;
 		#endregion
@@ -56,18 +67,23 @@ namespace SwitchWeapons
 			var gizmoRect = new Rect(topLeft.x, topLeft.y, GetWidth(maxWidth), Height);
 			Widgets.DrawWindowBackground(gizmoRect);
 
-			var center = gizmoRect.center;
-			var vector = new Vector2(center.x, center.y - 4);
-
+			var buttonTopLeft = new Vector2(topLeft.x + 4, topLeft.y + 2);
 			var button = SwitchButtonEnum.None;
-			if (DrawRangedIcon(vector))
+
+			if (DrawRangedIcon(buttonTopLeft))
 				button = SwitchButtonEnum.Ranged;
-			if (DrawMeleeIcon(vector))
+			if (DrawMeleeIcon(buttonTopLeft))
 				button = SwitchButtonEnum.Melee;
-			if (DrawDisableIcon(vector))
+			if (DrawDisableIcon(buttonTopLeft))
 				button = SwitchButtonEnum.Disable;
-			if (DrawUnarmedIcon(vector))
+			if (DrawUnarmedIcon(buttonTopLeft))
 				button = SwitchButtonEnum.Unarmed;
+
+			// would love for these buttons only to appear if the pawn(s) carry any weapons that can be switched to, but for performance reasons it is probably better not to do that
+			if (DrawNextIcon(buttonTopLeft))
+				button = SwitchButtonEnum.Next;
+			if (DrawPreviousIcon(buttonTopLeft))
+				button = SwitchButtonEnum.Previous;
 
 			GUI.color = _oriColor;
 
@@ -76,6 +92,11 @@ namespace SwitchWeapons
 			return button != SwitchButtonEnum.None ? 
 				new GizmoResult(GizmoState.Interacted, new Event(Event.current) { button = (int)button }) : 
 				new GizmoResult(GizmoState.Clear);
+		}
+
+		public override float GetWidth(float maxWidth)
+		{
+			return _iconSize * 3 + _iconGap * 2 + 8;
 		}
 
 		public override void ProcessInput(Event ev)
@@ -90,8 +111,20 @@ namespace SwitchWeapons
 						var memory = CompSidearmMemory.GetMemoryCompForPawn(_pawn);
 						memory.UnsetForcedWeapon(true);
 
+						// Disable out-of-combat forced weapon/unarmed
+						var forcedWeapon = memory.ForcedWeapon;
+						var forcedUnarmed = memory.ForcedUnarmed;
+						if (forcedWeapon?.thing?.IsRangedWeapon == false)
+							memory.ForcedWeapon = null;
+						else if (forcedUnarmed)
+							memory.ForcedUnarmed = false;
+
 						// Switch to the best ranged weapon
 						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm, Enums.PrimaryWeaponMode.Ranged);
+
+						// Reenable out-of-combat forced weapon/unarmed
+						memory.ForcedWeapon = forcedWeapon;
+						memory.ForcedUnarmed = forcedUnarmed;
 					}
 					break;
 				case SwitchButtonEnum.Melee:
@@ -100,6 +133,11 @@ namespace SwitchWeapons
 						var memory = CompSidearmMemory.GetMemoryCompForPawn(_pawn);
 						memory.UnsetForcedWeapon(true);
 
+						// Disable out-of-combat forced weapon/unarmed
+						var forcedWeapon = memory.ForcedWeapon;
+						if (forcedWeapon?.thing?.IsMeleeWeapon == false)
+							memory.ForcedWeapon = null;
+
 						// Switch to the best melee weapon
 						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm, Enums.PrimaryWeaponMode.Melee);
 
@@ -107,6 +145,9 @@ namespace SwitchWeapons
 						var weapon = _pawn.equipment.Primary;
 						if (weapon?.def?.IsMeleeWeapon == true)
 							memory.SetWeaponAsForced(weapon.toThingDefStuffDefPair(), true);
+
+						// Reenable out-of-combat forced weapon/unarmed
+						memory.ForcedWeapon = forcedWeapon;
 					}
 					break;
 				case SwitchButtonEnum.Disable:
@@ -127,6 +168,27 @@ namespace SwitchWeapons
 						// Set unarmed as forced
 						memory.SetUnarmedAsForced(true);
 
+						// Switch
+						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm);
+					}
+					break;
+
+				case SwitchButtonEnum.Next:
+					{
+						var switchToWeapon = GetWeapon(_pawn, true);
+						if (switchToWeapon != null)
+							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(switchToWeapon.toThingDefStuffDefPair(), true);
+
+						// Switch
+						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm);
+					}
+					break;
+				case SwitchButtonEnum.Previous:
+					{
+						var switchToWeapon = GetWeapon(_pawn, false);
+						if (switchToWeapon != null)
+							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(switchToWeapon.toThingDefStuffDefPair(), true);
+
 						// Switch to unarmed
 						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm);
 					}
@@ -142,108 +204,193 @@ namespace SwitchWeapons
 		#endregion
 
 		#region PRIVATE METHODS
-		private bool DrawRangedIcon(Vector2 center)
+		private bool DrawRangedIcon(Vector2 topLeft)
 		{
 			Rect rect = new Rect
 			{
-				x = center.x - _iconSize,
-				y = center.y - _iconSize,
+				x = topLeft.x,
+				y = topLeft.y,
 				width = _iconSize,
 				height = _iconSize,
 			};
 
 			if (Mouse.IsOver(rect))
 			{
-				GUI.color = _highlightColor;
-				GUI.DrawTexture(rect, TextureResources.ForceRanged);
 				TooltipHandler.TipRegion(rect, "SSSW_Ranged".Translate());
 				MouseoverSounds.DoRegion(rect, SoundDefOf.Mouseover_Command);
+				GUI.color = _highlightColor;
 			}
 			else
-			{
 				GUI.color = _baseColor;
-				GUI.DrawTexture(rect, TextureResources.ForceRanged);
-			}
+			GUI.DrawTexture(rect, TextureResources.Background);
+			GUI.color = _rangedColor;
+			GUI.DrawTexture(rect, TextureResources.ForceRanged);
 
 			return Widgets.ButtonInvisible(rect, true);
 		}
 
-		private bool DrawMeleeIcon(Vector2 center)
+		private bool DrawMeleeIcon(Vector2 topLeft)
 		{
 			Rect rect = new Rect
 			{
-				x = center.x - _iconSize,
-				y = center.y + _iconGap,
+				x = topLeft.x,
+				y = topLeft.y + _iconGap + _iconSize,
 				width = _iconSize,
 				height = _iconSize,
 			};
 
 			if (Mouse.IsOver(rect))
 			{
-				GUI.color = _highlightColor;
-				GUI.DrawTexture(rect, TextureResources.ForceMelee);
 				TooltipHandler.TipRegion(rect, "SSSW_Melee".Translate());
 				MouseoverSounds.DoRegion(rect, SoundDefOf.Mouseover_Command);
+				GUI.color = _highlightColor;
 			}
 			else
-			{
 				GUI.color = _baseColor;
-				GUI.DrawTexture(rect, TextureResources.ForceMelee);
-			}
+			GUI.DrawTexture(rect, TextureResources.Background);
+			GUI.color = _meleeColor;
+			GUI.DrawTexture(rect, TextureResources.ForceMelee);
 			
 			return Widgets.ButtonInvisible(rect, true);
 		}
 
-		private bool DrawDisableIcon(Vector2 center)
+		private bool DrawDisableIcon(Vector2 topLeft)
 		{
 			Rect rect = new Rect
 			{
-				x = center.x + _iconGap,
-				y = center.y - _iconSize,
+				x = topLeft.x + _iconGap + _iconSize,
+				y = topLeft.y,
 				width = _iconSize,
 				height = _iconSize,
 			};
 
 			if (Mouse.IsOver(rect))
 			{
-				GUI.color = _highlightColor;
-				GUI.DrawTexture(rect, TextureResources.Disable);
 				TooltipHandler.TipRegion(rect, "SSSW_Disable".Translate());
 				MouseoverSounds.DoRegion(rect, SoundDefOf.Mouseover_Command);
+				GUI.color = _highlightColor;
 			}
 			else
-			{
 				GUI.color = _baseColor;
-				GUI.DrawTexture(rect, TextureResources.Disable);
-			}
+			GUI.DrawTexture(rect, TextureResources.Background);
+			GUI.color = _disableColor;
+			GUI.DrawTexture(rect, TextureResources.Disable);
 			
 			return Widgets.ButtonInvisible(rect, true);
 		}
 
-		private bool DrawUnarmedIcon(Vector2 center)
+		private bool DrawUnarmedIcon(Vector2 topLeft)
 		{
 			Rect rect = new Rect
 			{
-				x = center.x + _iconGap,
-				y = center.y + _iconGap,
+				x = topLeft.x + _iconGap + _iconSize,
+				y = topLeft.y + _iconGap + _iconSize,
 				width = _iconSize,
 				height = _iconSize,
 			};
 
 			if (Mouse.IsOver(rect))
 			{
-				GUI.color = _highlightColor;
-				GUI.DrawTexture(rect, TextureResources.ForceUnarmed);
 				TooltipHandler.TipRegion(rect, "SSSW_Unarmed".Translate());
 				MouseoverSounds.DoRegion(rect, SoundDefOf.Mouseover_Command);
+				GUI.color = _highlightColor;
 			}
 			else
-			{
 				GUI.color = _baseColor;
-				GUI.DrawTexture(rect, TextureResources.ForceUnarmed);
-			}
+			GUI.DrawTexture(rect, TextureResources.Background);
+			GUI.color = _unarmedColor;
+			GUI.DrawTexture(rect, TextureResources.ForceUnarmed);
 			
 			return Widgets.ButtonInvisible(rect, true);
+		}
+
+		private bool DrawNextIcon(Vector2 topLeft)
+		{
+			Rect rect = new Rect
+			{
+				x = topLeft.x + _iconGap * 2 + _iconSize * 2,
+				y = topLeft.y,
+				width = _iconSize,
+				height = _iconSize,
+			};
+
+			if (Mouse.IsOver(rect))
+			{
+				TooltipHandler.TipRegion(rect, "SSSW_Next".Translate());
+				MouseoverSounds.DoRegion(rect, SoundDefOf.Mouseover_Command);
+				GUI.color = _highlightColor;
+			}
+			else
+				GUI.color = _baseColor;
+			GUI.DrawTexture(rect, TextureResources.Background);
+			GUI.color = _nextPrevColor;
+			GUI.DrawTexture(rect, TextureResources.Next);
+
+			return Widgets.ButtonInvisible(rect, true);
+		}
+
+		private bool DrawPreviousIcon(Vector2 topLeft)
+		{
+			Rect rect = new Rect
+			{
+				x = topLeft.x + _iconGap * 2 + _iconSize * 2,
+				y = topLeft.y + _iconGap + _iconSize,
+				width = _iconSize,
+				height = _iconSize,
+			};
+
+			if (Mouse.IsOver(rect))
+			{
+				TooltipHandler.TipRegion(rect, "SSSW_Previous".Translate());
+				MouseoverSounds.DoRegion(rect, SoundDefOf.Mouseover_Command);
+				GUI.color = _highlightColor;
+			}
+			else
+				GUI.color = _baseColor;
+			GUI.DrawTexture(rect, TextureResources.Background);
+			GUI.color = _nextPrevColor;
+			GUI.DrawTexture(rect, TextureResources.Previous);
+
+			return Widgets.ButtonInvisible(rect, true);
+		}
+
+
+		private ThingWithComps GetWeapon(Pawn pawn, bool getNext)
+		{
+			if (pawn == null)
+				return null;
+
+			// Get currently equipped weapon
+			var currentWeapon = pawn.equipment?.Primary;
+			// Get carried weapons
+			var carriedWeapons = pawn.getCarriedWeapons(true, true);
+			if (currentWeapon?.def != null && carriedWeapons?.Count() > 0)
+			{
+				List<ThingWithComps> weapons = new List<ThingWithComps>();
+				// Find all carried ranged weapons
+				if (currentWeapon.def.IsRangedWeapon)
+				{
+					foreach (var carriedWeapon in carriedWeapons)
+						if (carriedWeapon?.def?.IsRangedWeapon == true)
+							weapons.Add(carriedWeapon);
+				}
+				// Find all carried melee weapons
+				else
+				{
+					foreach (var carriedWeapon in carriedWeapons)
+						if (carriedWeapon?.def?.IsMeleeWeapon == true)
+							weapons.Add(carriedWeapon);
+				}
+				// Sort weapons
+				weapons.SortStable((a, b) => (int)((b.MarketValue - a.MarketValue) * 1000));
+
+				// Return next or previous weapon
+				var index = weapons.FirstIndexOf((weapon) => weapon == currentWeapon);
+				index += getNext ? 1 : -1;
+				if (index >= 0 && index < weapons.Count())
+					return weapons[index];
+			}
+			return null;
 		}
 		#endregion
 
