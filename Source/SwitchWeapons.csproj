@@ -41,6 +41,10 @@
       <HintPath>..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="HugsLib">
+      <HintPath>..\..\..\..\..\workshop\content\294100\818773962\v1.3\Assemblies\HugsLib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="SimpleSidearms">
       <HintPath>..\..\..\..\..\workshop\content\294100\927155256\v1.3\Assemblies\SimpleSidearms.dll</HintPath>
       <Private>False</Private>
@@ -78,6 +82,7 @@
     <Compile Include="Gizmo_SwitchWeapon.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SwitchWeapons.cs" />
     <Compile Include="TextureResources.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -29,24 +29,61 @@ namespace SwitchWeapons
 	[HarmonyPatch(typeof(Pawn_DraftController), "GetGizmos")]
 	static class Pawn_DraftController_GetGizmos
 	{
-		[HarmonyPriority(0)]
+		[HarmonyPriority(Priority.Last)]
 		public static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn_DraftController __instance)
 		{
-			var pawn = __instance?.pawn;
+			var switchWeaponGizmo = CreateSwitchWeaponGizmo(__instance?.pawn);
+
+			// no gizmo to show
+			if (switchWeaponGizmo == null)
+			{
+				foreach (var gizmo in __result)
+					yield return gizmo;
+			}
+			// show gizmo after SimpleSidearms (hopefully)
+			else if (!SwitchWeapons.ShowAfterDraftToggle)
+			{
+				yield return switchWeaponGizmo;
+
+				foreach (var gizmo in __result)
+					yield return gizmo;
+			}
+			// show gizmo after draft-toggle
+			else
+			{
+				foreach (var gizmo in __result)
+				{
+					yield return gizmo;
+
+					if (switchWeaponGizmo != null
+						&& gizmo is Command_Toggle cmd
+						&& cmd.groupKey == 81729172) // groupKey for draft/undraft
+					{
+						yield return switchWeaponGizmo;
+						switchWeaponGizmo = null;
+					}
+				}
+
+				// make sure the gizmo shows if for some reason it didn't show beforehand (will show last)
+				if (switchWeaponGizmo != null)
+					yield return switchWeaponGizmo;
+			}
+		}
+
+		private static Gizmo_SwitchWeapon CreateSwitchWeaponGizmo(Pawn pawn)
+		{
 			if (pawn != null
 				&& pawn.Faction?.IsPlayer == true
 				&& pawn.Drafted
 				&& !pawn.WorkTagIsDisabled(WorkTags.Violent))
 			{
-				yield return new Gizmo_SwitchWeapon(pawn)
+				return new Gizmo_SwitchWeapon(pawn)
 				{
 					disabled = pawn.Downed,
 					disabledReason = "SSSW_Downed".Translate(),
 				};
 			}
-
-			foreach (var gizmo in __result)
-				yield return gizmo;
+			return null;
 		}
 	}
 }

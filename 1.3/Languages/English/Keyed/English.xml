@@ -16,4 +16,7 @@
 	<SSSW_Previous>Previous: switch to previous weapon
 (if carrying multiple ranged or melee weapons)</SSSW_Previous>
 
+	<SSSW_ShowAfterDraftToggle>Show after "Draft/Undraft" gizmo</SSSW_ShowAfterDraftToggle>
+	<SSSW_ShowAfterDraftToggleDesc>Will put the "Switch" gizmo after the "Draft/Undraft" gizmo</SSSW_ShowAfterDraftToggleDesc>
+
 </LanguageData>
