@@ -22,6 +22,7 @@ namespace SwitchWeapons
 				"SSSW_ShowAfterDraftToggleDesc".Translate(),
 				ShowAfterDraftToggle);
 			_showAfterDraftToggle.ValueChanged += val => ShowAfterDraftToggle = (SettingHandle<bool>)val;
+			ShowAfterDraftToggle = _showAfterDraftToggle;
 		}
 	}
 }
