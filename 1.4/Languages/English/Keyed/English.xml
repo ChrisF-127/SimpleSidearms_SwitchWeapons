@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+	<SSSW_SwitchWeaponsLabel>Simple Sidearms - Switch Weapons</SSSW_SwitchWeaponsLabel>
+	<SSSW_SwitchWeaponsDesc>Switch between ranged, melee or unarmed weapons</SSSW_SwitchWeaponsDesc>
+	<SSSW_Switch>Switch</SSSW_Switch>
+	
+	<SSSW_Ranged>Ranged: use ranged weapon</SSSW_Ranged>
+	<SSSW_Melee>Melee: force using melee weapon
+(no effect without a melee weapon)</SSSW_Melee>
+	<SSSW_Unarmed>Unarmed: force unarmed fighting</SSSW_Unarmed>
+	<SSSW_Disable>Preferred: use preferred weapon</SSSW_Disable>
+	
+	<SSSW_Next>Next: switch to next weapon
+(if carrying multiple ranged or melee weapons)</SSSW_Next>
+	<SSSW_Previous>Previous: switch to previous weapon
+(if carrying multiple ranged or melee weapons)</SSSW_Previous>
+
+	<SSSW_ShowAfterDraftToggle>Show after "Draft/Undraft" gizmo</SSSW_ShowAfterDraftToggle>
+	<SSSW_ShowAfterDraftToggleDesc>Will put the "Switch" gizmo after the "Draft/Undraft" gizmo</SSSW_ShowAfterDraftToggleDesc>
+
+</LanguageData>
