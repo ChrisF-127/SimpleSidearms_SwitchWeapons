@@ -15,17 +15,6 @@ using Verse.Sound;
 
 namespace SwitchWeapons
 {
-	[StaticConstructorOnStartup]
-	public static class HarmonyPatches
-	{
-		static HarmonyPatches()
-		{
-			Harmony harmony = new Harmony("syrus.simplesidearms_switchweapons");
-
-			harmony.PatchAll();
-		}
-	}
-
 	[HarmonyPatch(typeof(Pawn_DraftController), "GetGizmos")]
 	static class Pawn_DraftController_GetGizmos
 	{
@@ -55,9 +44,11 @@ namespace SwitchWeapons
 				{
 					yield return gizmo;
 
+					// check groupKey for draft/undraft; see Pawn_DraftController.GetGizmos
+					//  could also use "defaultDesc = "CommandToggleDraftDesc".Translate()" or "icon = TexCommand.Draft"
 					if (switchWeaponGizmo != null
 						&& gizmo is Command_Toggle cmd
-						&& cmd.groupKey == 81729172) // groupKey for draft/undraft
+						&& cmd.groupKeyIgnoreContent == 81729172)
 					{
 						yield return switchWeaponGizmo;
 						switchWeaponGizmo = null;

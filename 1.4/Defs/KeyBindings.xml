@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Defs>
+  
+  <KeyBindingDef Name="SSSWKeyBinding" Abstract="true">
+    <category>SSSW_Keys</category>
+  </KeyBindingDef>
+
+  <KeyBindingDef ParentName="SSSWKeyBinding">
+    <defName>SSSW_Ranged</defName>
+    <label>switch to ranged</label>
+  </KeyBindingDef>
+
+  <KeyBindingDef ParentName="SSSWKeyBinding">
+    <defName>SSSW_Melee</defName>
+    <label>switch to melee</label>
+  </KeyBindingDef>
+
+  <KeyBindingDef ParentName="SSSWKeyBinding">
+    <defName>SSSW_Disable</defName>
+    <label>switch to default</label>
+  </KeyBindingDef>
+
+  <KeyBindingDef ParentName="SSSWKeyBinding">
+    <defName>SSSW_Unarmed</defName>
+    <label>switch to unarmed</label>
+  </KeyBindingDef>
+
+  <KeyBindingDef ParentName="SSSWKeyBinding">
+    <defName>SSSW_Next</defName>
+    <label>switch to next weapon</label>
+  </KeyBindingDef>
+
+  <KeyBindingDef ParentName="SSSWKeyBinding">
+    <defName>SSSW_Previous</defName>
+    <label>switch to previous weapon</label>
+  </KeyBindingDef>
+
+</Defs>

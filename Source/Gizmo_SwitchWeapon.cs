@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace SwitchWeapons
 {
@@ -42,7 +43,17 @@ namespace SwitchWeapons
 		private Color _baseColor = new Color(0.5f, 0.5f, 0.5f);
 		private Color _highlightColor = new Color(1.0f, 1.0f, 1.0f);
 
-		private Pawn _pawn = null;
+		private const float _hotKeyLabelRectMarginX = 3f;
+		private const float _hotKeyLabelRectMarginY = 1f;
+
+		private readonly Pawn _pawn = null;
+
+		private readonly KeyBindingDef hotKeyRanged = SwitchWeaponKeyBindingDefOf.SSSW_Ranged;
+		private readonly KeyBindingDef hotKeyMelee = SwitchWeaponKeyBindingDefOf.SSSW_Melee;
+		private readonly KeyBindingDef hotKeyDisable = SwitchWeaponKeyBindingDefOf.SSSW_Disable;
+		private readonly KeyBindingDef hotKeyUnarmed = SwitchWeaponKeyBindingDefOf.SSSW_Unarmed;
+		private readonly KeyBindingDef hotKeyNext = SwitchWeaponKeyBindingDefOf.SSSW_Next;
+		private readonly KeyBindingDef hotKeyPrevious = SwitchWeaponKeyBindingDefOf.SSSW_Previous;
 		#endregion
 
 		#region CONSTRUCTORS
@@ -51,6 +62,8 @@ namespace SwitchWeapons
 			_pawn = pawn;
 			defaultLabel = "SSSW_SwitchWeaponsLabel".Translate();
 			defaultDesc = "SSSW_SwitchWeaponsDesc".Translate();
+
+			shrinkable = false;
 		}
 		#endregion
 
@@ -63,41 +76,39 @@ namespace SwitchWeapons
 				return new GizmoResult(GizmoState.Clear);
 			}
 
-			var _oriColor = GUI.color;
 			var gizmoRect = new Rect(topLeft.x, topLeft.y, GetWidth(maxWidth), Height);
 			Widgets.DrawWindowBackground(gizmoRect);
 
 			var buttonTopLeft = new Vector2(topLeft.x + 4, topLeft.y + 2);
 			var button = SwitchButtonEnum.None;
 
-			if (DrawRangedIcon(buttonTopLeft))
+			var oriFont = Text.Font;
+			Text.Font = GameFont.Tiny;
+			if (DrawRangedIcon(buttonTopLeft, hotKeyRanged))
 				button = SwitchButtonEnum.Ranged;
-			if (DrawMeleeIcon(buttonTopLeft))
+			if (DrawMeleeIcon(buttonTopLeft, hotKeyMelee))
 				button = SwitchButtonEnum.Melee;
-			if (DrawDisableIcon(buttonTopLeft))
+			if (DrawDisableIcon(buttonTopLeft, hotKeyDisable))
 				button = SwitchButtonEnum.Disable;
-			if (DrawUnarmedIcon(buttonTopLeft))
+			if (DrawUnarmedIcon(buttonTopLeft, hotKeyUnarmed))
 				button = SwitchButtonEnum.Unarmed;
 
 			// would love for these buttons only to appear if the pawn(s) carry any weapons that can be switched to, but for performance reasons it is probably better not to do that
-			if (DrawNextIcon(buttonTopLeft))
+			if (DrawNextIcon(buttonTopLeft, hotKeyNext))
 				button = SwitchButtonEnum.Next;
-			if (DrawPreviousIcon(buttonTopLeft))
+			if (DrawPreviousIcon(buttonTopLeft, hotKeyPrevious))
 				button = SwitchButtonEnum.Previous;
-
-			GUI.color = _oriColor;
+			Text.Font = Text.Font;
 
 			DrawGizmoLabel("SSSW_Switch".Translate(), gizmoRect);
 
-			return button != SwitchButtonEnum.None ? 
-				new GizmoResult(GizmoState.Interacted, new Event(Event.current) { button = (int)button }) : 
-				new GizmoResult(GizmoState.Clear);
+			if (button != SwitchButtonEnum.None)
+				return new GizmoResult(GizmoState.Interacted, new Event(Event.current) { button = (int)button });
+			return new GizmoResult(GizmoState.Clear);
 		}
 
-		public override float GetWidth(float maxWidth)
-		{
-			return _iconSize * 3 + _iconGap * 2 + 8;
-		}
+		public override float GetWidth(float maxWidth) => 
+			_iconSize * 3 + _iconGap * 2 + 8;
 
 		public override void ProcessInput(Event ev)
 		{
@@ -204,7 +215,7 @@ namespace SwitchWeapons
 		#endregion
 
 		#region PRIVATE METHODS
-		private bool DrawRangedIcon(Vector2 topLeft)
+		private bool DrawRangedIcon(Vector2 topLeft, KeyBindingDef key)
 		{
 			Rect rect = new Rect
 			{
@@ -214,6 +225,7 @@ namespace SwitchWeapons
 				height = _iconSize,
 			};
 
+			var oriColor = GUI.color;
 			if (Mouse.IsOver(rect))
 			{
 				TooltipHandler.TipRegion(rect, "SSSW_Ranged".Translate());
@@ -225,11 +237,14 @@ namespace SwitchWeapons
 			GUI.DrawTexture(rect, TextureResources.Background);
 			GUI.color = _rangedColor;
 			GUI.DrawTexture(rect, TextureResources.ForceRanged);
+			GUI.color = oriColor;
 
-			return Widgets.ButtonInvisible(rect, true);
+			if (key != null && key.MainKey != KeyCode.None)
+				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
+			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
 		}
 
-		private bool DrawMeleeIcon(Vector2 topLeft)
+		private bool DrawMeleeIcon(Vector2 topLeft, KeyBindingDef key)
 		{
 			Rect rect = new Rect
 			{
@@ -239,6 +254,7 @@ namespace SwitchWeapons
 				height = _iconSize,
 			};
 
+			var oriColor = GUI.color;
 			if (Mouse.IsOver(rect))
 			{
 				TooltipHandler.TipRegion(rect, "SSSW_Melee".Translate());
@@ -250,11 +266,14 @@ namespace SwitchWeapons
 			GUI.DrawTexture(rect, TextureResources.Background);
 			GUI.color = _meleeColor;
 			GUI.DrawTexture(rect, TextureResources.ForceMelee);
-			
-			return Widgets.ButtonInvisible(rect, true);
+			GUI.color = oriColor;
+
+			if (key != null && key.MainKey != KeyCode.None)
+				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
+			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
 		}
 
-		private bool DrawDisableIcon(Vector2 topLeft)
+		private bool DrawDisableIcon(Vector2 topLeft, KeyBindingDef key)
 		{
 			Rect rect = new Rect
 			{
@@ -264,6 +283,7 @@ namespace SwitchWeapons
 				height = _iconSize,
 			};
 
+			var oriColor = GUI.color;
 			if (Mouse.IsOver(rect))
 			{
 				TooltipHandler.TipRegion(rect, "SSSW_Disable".Translate());
@@ -275,11 +295,14 @@ namespace SwitchWeapons
 			GUI.DrawTexture(rect, TextureResources.Background);
 			GUI.color = _disableColor;
 			GUI.DrawTexture(rect, TextureResources.Disable);
-			
-			return Widgets.ButtonInvisible(rect, true);
+			GUI.color = oriColor;
+
+			if (key != null && key.MainKey != KeyCode.None)
+				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
+			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
 		}
 
-		private bool DrawUnarmedIcon(Vector2 topLeft)
+		private bool DrawUnarmedIcon(Vector2 topLeft, KeyBindingDef key)
 		{
 			Rect rect = new Rect
 			{
@@ -289,6 +312,7 @@ namespace SwitchWeapons
 				height = _iconSize,
 			};
 
+			var oriColor = GUI.color;
 			if (Mouse.IsOver(rect))
 			{
 				TooltipHandler.TipRegion(rect, "SSSW_Unarmed".Translate());
@@ -300,11 +324,14 @@ namespace SwitchWeapons
 			GUI.DrawTexture(rect, TextureResources.Background);
 			GUI.color = _unarmedColor;
 			GUI.DrawTexture(rect, TextureResources.ForceUnarmed);
-			
-			return Widgets.ButtonInvisible(rect, true);
+			GUI.color = oriColor;
+
+			if (key != null && key.MainKey != KeyCode.None)
+				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
+			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
 		}
 
-		private bool DrawNextIcon(Vector2 topLeft)
+		private bool DrawNextIcon(Vector2 topLeft, KeyBindingDef key)
 		{
 			Rect rect = new Rect
 			{
@@ -314,6 +341,7 @@ namespace SwitchWeapons
 				height = _iconSize,
 			};
 
+			var oriColor = GUI.color;
 			if (Mouse.IsOver(rect))
 			{
 				TooltipHandler.TipRegion(rect, "SSSW_Next".Translate());
@@ -325,11 +353,14 @@ namespace SwitchWeapons
 			GUI.DrawTexture(rect, TextureResources.Background);
 			GUI.color = _nextPrevColor;
 			GUI.DrawTexture(rect, TextureResources.Next);
+			GUI.color = oriColor;
 
-			return Widgets.ButtonInvisible(rect, true);
+			if (key != null && key.MainKey != KeyCode.None)
+				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
+			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
 		}
 
-		private bool DrawPreviousIcon(Vector2 topLeft)
+		private bool DrawPreviousIcon(Vector2 topLeft, KeyBindingDef key)
 		{
 			Rect rect = new Rect
 			{
@@ -339,6 +370,7 @@ namespace SwitchWeapons
 				height = _iconSize,
 			};
 
+			var oriColor = GUI.color;
 			if (Mouse.IsOver(rect))
 			{
 				TooltipHandler.TipRegion(rect, "SSSW_Previous".Translate());
@@ -350,8 +382,11 @@ namespace SwitchWeapons
 			GUI.DrawTexture(rect, TextureResources.Background);
 			GUI.color = _nextPrevColor;
 			GUI.DrawTexture(rect, TextureResources.Previous);
+			GUI.color = oriColor;
 
-			return Widgets.ButtonInvisible(rect, true);
+			if (key != null && key.MainKey != KeyCode.None)
+				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
+			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
 		}
 
 
