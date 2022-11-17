@@ -1,4 +1,5 @@
-﻿using PeteTimesSix.SimpleSidearms;
+﻿using HarmonyLib;
+using PeteTimesSix.SimpleSidearms;
 using PeteTimesSix.SimpleSidearms.Utilities;
 using RimWorld;
 using SimpleSidearms.rimworld;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
-using static System.Runtime.CompilerServices.RuntimeHelpers;
+using static PeteTimesSix.SimpleSidearms.Utilities.Enums;
 
 namespace SwitchWeapons
 {
@@ -130,8 +131,8 @@ namespace SwitchWeapons
 						else if (forcedUnarmed)
 							memory.ForcedUnarmed = false;
 
-						// Switch to the best ranged weapon
-						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm, Enums.PrimaryWeaponMode.Ranged);
+						// Switch to ranged
+						SwitchToRanged(memory);
 
 						// Reenable out-of-combat forced weapon/unarmed
 						memory.ForcedWeapon = forcedWeapon;
@@ -149,8 +150,8 @@ namespace SwitchWeapons
 						if (forcedWeapon?.thing?.IsMeleeWeapon == false)
 							memory.ForcedWeapon = null;
 
-						// Switch to the best melee weapon
-						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm, Enums.PrimaryWeaponMode.Melee);
+						// Switch to melee
+						SwitchToMelee(memory);
 
 						// Set the weapon as forced if it is a melee weapon
 						var weapon = _pawn.equipment.Primary;
@@ -163,43 +164,60 @@ namespace SwitchWeapons
 					break;
 				case SwitchButtonEnum.Disable:
 					{
-						// Unset forced weapons
-						CompSidearmMemory.GetMemoryCompForPawn(_pawn).UnsetForcedWeapon(true);
+						var memory = CompSidearmMemory.GetMemoryCompForPawn(_pawn);
 
-						// Switch to preference
-						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm);
+						// Unset forced weapons
+						memory.UnsetForcedWeapon(true);
+
+						// Switch according to preference
+						if (UseRanged(memory))
+							SwitchToRanged(memory);
+						else if (!memory.PreferredUnarmed)
+							SwitchToMelee(memory);
+						else
+							SwitchToUnarmed();
 					}
 					break;
 				case SwitchButtonEnum.Unarmed:
 					{
 						// Unset forced weapons
 						var memory = CompSidearmMemory.GetMemoryCompForPawn(_pawn);
+
+						// Unset forced weapons, otherwise it won't switch to unarmed
 						memory.UnsetForcedWeapon(true);
 
 						// Set unarmed as forced
 						memory.SetUnarmedAsForced(true);
 
-						// Switch
-						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm);
+						// Switch to unarmed
+						WeaponAssingment.equipSpecificWeapon(_pawn, null, false, false);
 					}
 					break;
 
 				case SwitchButtonEnum.Next:
 					{
+						// Try find next weapon to switch to
 						if (GetWeapon(_pawn, true) is ThingDefStuffDefPair switchToWeapon)
+						{
+							// Set weapon as forced so it sticks
 							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(switchToWeapon, true);
 
-						// Switch
-						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm);
+							// Switch to weapon
+							WeaponAssingment.equipSpecificWeaponTypeFromInventory(_pawn, switchToWeapon, false, false);
+						}
 					}
 					break;
 				case SwitchButtonEnum.Previous:
 					{
+						// Try find previous weapon to switch to
 						if (GetWeapon(_pawn, false) is ThingDefStuffDefPair switchToWeapon)
+						{
+							// Set weapon as forced so it sticks
 							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(switchToWeapon, true);
 
-						// Switch to unarmed
-						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm);
+							// Switch to weapon
+							WeaponAssingment.equipSpecificWeaponTypeFromInventory(_pawn, switchToWeapon, false, false);
+						}
 					}
 					break;
 
@@ -209,10 +227,47 @@ namespace SwitchWeapons
 			}
 		}
 
-		public override bool GroupsWith(Gizmo other) => other is Gizmo_SwitchWeapon;
-		#endregion
+		public override bool GroupsWith(Gizmo other) => 
+			other is Gizmo_SwitchWeapon;
 
+		#endregion
 		#region PRIVATE METHODS
+		private bool UseRanged(CompSidearmMemory memory) =>
+			memory.primaryWeaponMode == PrimaryWeaponMode.Ranged 
+			|| (memory.primaryWeaponMode == PrimaryWeaponMode.BySkill 
+				&& _pawn.getSkillWeaponPreference() == PrimaryWeaponMode.Ranged);
+
+		private void SwitchToRanged(CompSidearmMemory memory)
+		{
+			// Switch to default weapon
+			if (memory.DefaultRangedWeapon is ThingDefStuffDefPair pair)
+				WeaponAssingment.equipSpecificWeaponTypeFromInventory(_pawn, pair, false, false);
+			// Switch to best ranged weapon
+			else
+			{
+				(var thing, _, _) = GettersFilters.findBestRangedWeapon(_pawn, null, true, PeteTimesSix.SimpleSidearms.SimpleSidearms.Settings.SkipDangerousWeapons, true);
+				if (_pawn.equipment.Primary != thing)
+					WeaponAssingment.equipSpecificWeaponFromInventory(_pawn, thing, false, false);
+			}
+		}
+		private void SwitchToMelee(CompSidearmMemory memory)
+		{
+			// Switch to preferred melee weapon
+			if (memory.PreferredMeleeWeapon is ThingDefStuffDefPair pair)
+				WeaponAssingment.equipSpecificWeaponTypeFromInventory(_pawn, pair, false, false);
+			// Switch to best melee weapon
+			else
+			{
+				var primary = _pawn.equipment.Primary;
+				if (GettersFilters.findBestMeleeWeapon(_pawn, out var thing, primary?.def.IsRangedWeapon != true, false)
+					&& primary != thing)
+					WeaponAssingment.equipSpecificWeaponFromInventory(_pawn, thing, false, false);
+			}
+		}
+		private void SwitchToUnarmed() =>
+			WeaponAssingment.equipSpecificWeapon(_pawn, null, false, false);
+
+		#region BUTTON DRAWING METHODS
 		private bool DrawRangedIcon(Vector2 topLeft, KeyBindingDef key)
 		{
 			Rect rect = new Rect
@@ -386,10 +441,11 @@ namespace SwitchWeapons
 				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
 			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
 		}
-
+		#endregion
 
 		private ThingDefStuffDefPair? GetWeapon(Pawn pawn, bool getNext)
 		{
+			// Shouldn't have a null-pawn, still better to check for it
 			if (pawn == null)
 				return null;
 
@@ -397,17 +453,20 @@ namespace SwitchWeapons
 			var currentWeapon = pawn.equipment?.Primary;
 			// Get carried weapons
 			var carriedWeapons = pawn.getCarriedWeapons(true, true);
+			
+			// check if has a weapon equipped (otherwise the pawn is unarmed) and is carrying weapons
 			if (currentWeapon?.def != null && carriedWeapons?.Count() > 0)
 			{
 				var weapons = new List<ThingWithComps>();
-				// Find all carried ranged weapons
+
+				// If equipped weapon is ranged, find all carried ranged weapons
 				if (currentWeapon.def.IsRangedWeapon)
 				{
 					foreach (var carriedWeapon in carriedWeapons)
 						if (carriedWeapon?.def?.IsRangedWeapon == true)
 							weapons.Add(carriedWeapon);
 				}
-				// Find all carried melee weapons
+				// ...otherwise find all carried melee weapons
 				else
 				{
 					foreach (var carriedWeapon in carriedWeapons)
@@ -415,10 +474,10 @@ namespace SwitchWeapons
 							weapons.Add(carriedWeapon);
 				}
 
-				// Sort weapons
+				// Sort weapons by market value (the same is also used by Simple Sidearms for sorting the UI display)
 				weapons.SortStable((a, b) => (int)((b.MarketValue - a.MarketValue) * 1000));
 
-				// Weapons to ThingDefStuffDefPairs
+				// Convert weapons to ThingDefStuffDefPairs
 				var pairs = new List<ThingDefStuffDefPair>();
 				foreach (var weapon in weapons)
 				{
@@ -427,7 +486,7 @@ namespace SwitchWeapons
 						pairs.Add(stuff);
 				}
 
-				// get index/pair of current weapon
+				// Get index and pair of currently equipped weapon
 				var currentPair = currentWeapon.toThingDefStuffDefPair();
 				var index = pairs.IndexOf(currentPair);
 
