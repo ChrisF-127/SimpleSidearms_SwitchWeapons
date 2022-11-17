@@ -132,7 +132,8 @@ namespace SwitchWeapons
 							memory.ForcedUnarmed = false;
 
 						// Switch to ranged
-						SwitchToRanged(memory);
+						if (!SwitchToRanged(memory))
+							Log.Warning("Simple Sidearms - Switch Weapons: [Ranged] switching to melee failed");
 
 						// Reenable out-of-combat forced weapon/unarmed
 						memory.ForcedWeapon = forcedWeapon;
@@ -151,7 +152,8 @@ namespace SwitchWeapons
 							memory.ForcedWeapon = null;
 
 						// Switch to melee
-						SwitchToMelee(memory);
+						if (!SwitchToMelee(memory))
+							Log.Warning("Simple Sidearms - Switch Weapons: [Melee] switching to melee failed");
 
 						// Set the weapon as forced if it is a melee weapon
 						var weapon = _pawn.equipment.Primary;
@@ -170,12 +172,24 @@ namespace SwitchWeapons
 						memory.UnsetForcedWeapon(true);
 
 						// Switch according to preference
+						// ranged
 						if (UseRanged(memory))
-							SwitchToRanged(memory);
+						{
+							if (!SwitchToRanged(memory))
+								Log.Warning("Simple Sidearms - Switch Weapons: [Disable] switching to ranged failed");
+						}
+						// melee
 						else if (!memory.PreferredUnarmed)
-							SwitchToMelee(memory);
+						{
+							if (!SwitchToMelee(memory))
+								Log.Warning("Simple Sidearms - Switch Weapons: [Disable] switching to melee failed");
+						}
+						// unarmed
 						else
-							SwitchToUnarmed();
+						{
+							if (!SwitchTo(null))
+								Log.Warning("Simple Sidearms - Switch Weapons: [Disable] switching to unarmed failed");
+						}
 					}
 					break;
 				case SwitchButtonEnum.Unarmed:
@@ -190,33 +204,36 @@ namespace SwitchWeapons
 						memory.SetUnarmedAsForced(true);
 
 						// Switch to unarmed
-						WeaponAssingment.equipSpecificWeapon(_pawn, null, false, false);
+						if (!SwitchTo(null))
+							Log.Warning("Simple Sidearms - Switch Weapons: [Unarmed] switching to unarmed failed");
 					}
 					break;
 
 				case SwitchButtonEnum.Next:
 					{
 						// Try find next weapon to switch to
-						if (GetWeapon(_pawn, true) is ThingDefStuffDefPair switchToWeapon)
+						if (GetWeapon(_pawn, true) is ThingDefStuffDefPair pair)
 						{
 							// Set weapon as forced so it sticks
-							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(switchToWeapon, true);
+							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(pair, true);
 
 							// Switch to weapon
-							WeaponAssingment.equipSpecificWeaponTypeFromInventory(_pawn, switchToWeapon, false, false);
+							if (!SwitchTo(pair))
+								Log.Warning("Simple Sidearms - Switch Weapons: [Next] switching to next weapon failed");
 						}
 					}
 					break;
 				case SwitchButtonEnum.Previous:
 					{
 						// Try find previous weapon to switch to
-						if (GetWeapon(_pawn, false) is ThingDefStuffDefPair switchToWeapon)
+						if (GetWeapon(_pawn, false) is ThingDefStuffDefPair pair)
 						{
 							// Set weapon as forced so it sticks
-							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(switchToWeapon, true);
+							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(pair, true);
 
 							// Switch to weapon
-							WeaponAssingment.equipSpecificWeaponTypeFromInventory(_pawn, switchToWeapon, false, false);
+							if (!SwitchTo(pair))
+								Log.Warning("Simple Sidearms - Switch Weapons: [Previous] switching to previous weapon failed");
 						}
 					}
 					break;
@@ -229,45 +246,113 @@ namespace SwitchWeapons
 
 		public override bool GroupsWith(Gizmo other) => 
 			other is Gizmo_SwitchWeapon;
-
 		#endregion
+
 		#region PRIVATE METHODS
 		private bool UseRanged(CompSidearmMemory memory) =>
 			memory.primaryWeaponMode == PrimaryWeaponMode.Ranged 
 			|| (memory.primaryWeaponMode == PrimaryWeaponMode.BySkill 
 				&& _pawn.getSkillWeaponPreference() == PrimaryWeaponMode.Ranged);
 
-		private void SwitchToRanged(CompSidearmMemory memory)
+		private bool SwitchToRanged(CompSidearmMemory memory)
 		{
 			// Switch to default weapon
-			if (memory.DefaultRangedWeapon is ThingDefStuffDefPair pair)
-				WeaponAssingment.equipSpecificWeaponTypeFromInventory(_pawn, pair, false, false);
+			if (memory.DefaultRangedWeapon is ThingDefStuffDefPair pair 
+				&& SwitchTo(pair))
+				return true;
+
 			// Switch to best ranged weapon
-			else
-			{
-				(var thing, _, _) = GettersFilters.findBestRangedWeapon(_pawn, null, true, PeteTimesSix.SimpleSidearms.SimpleSidearms.Settings.SkipDangerousWeapons, true);
-				if (_pawn.equipment.Primary != thing)
-					WeaponAssingment.equipSpecificWeaponFromInventory(_pawn, thing, false, false);
-			}
+			if (GettersFilters.findBestRangedWeapon(_pawn, null, true, PeteTimesSix.SimpleSidearms.SimpleSidearms.Settings.SkipDangerousWeapons, true).weapon is ThingWithComps thing
+				&& SwitchTo(thing))
+				return true;
+
+			// Switch failed
+			return false;
 		}
-		private void SwitchToMelee(CompSidearmMemory memory)
+		private bool SwitchToMelee(CompSidearmMemory memory)
 		{
 			// Switch to preferred melee weapon
-			if (memory.PreferredMeleeWeapon is ThingDefStuffDefPair pair)
-				WeaponAssingment.equipSpecificWeaponTypeFromInventory(_pawn, pair, false, false);
-			// Switch to best melee weapon
-			else
-			{
-				var primary = _pawn.equipment.Primary;
-				if (GettersFilters.findBestMeleeWeapon(_pawn, out var thing, primary?.def.IsRangedWeapon != true, false)
-					&& primary != thing)
-					WeaponAssingment.equipSpecificWeaponFromInventory(_pawn, thing, false, false);
-			}
-		}
-		private void SwitchToUnarmed() =>
-			WeaponAssingment.equipSpecificWeapon(_pawn, null, false, false);
+			if (memory.PreferredMeleeWeapon is ThingDefStuffDefPair pair
+				&& SwitchTo(pair))
+				return true;
 
-		#region BUTTON DRAWING METHODS
+			// Switch to best melee weapon
+			if (GettersFilters.findBestMeleeWeapon(_pawn, out var thing, _pawn.equipment.Primary?.def.IsRangedWeapon != true, false)
+				&& SwitchTo(thing))
+				return true;
+
+			// Switch failed
+			return false;
+		}
+
+		private bool SwitchTo(ThingDefStuffDefPair pair) =>
+			_pawn.equipment.Primary?.toThingDefStuffDefPair() == pair 
+			|| WeaponAssingment.equipSpecificWeaponTypeFromInventory(_pawn, pair, IsFumbleDrop(), false);
+		private bool SwitchTo(ThingWithComps thing) => 
+			_pawn.equipment.Primary == thing 
+			|| WeaponAssingment.equipSpecificWeapon(_pawn, thing, IsFumbleDrop(), false);
+
+		private bool IsFumbleDrop() =>
+			MiscUtils.shouldDrop(_pawn, DroppingModeEnum.Combat, false);
+
+		private ThingDefStuffDefPair? GetWeapon(Pawn pawn, bool getNext)
+		{
+			// Shouldn't have a null-pawn, still better to check for it
+			if (pawn == null)
+				return null;
+
+			// Get currently equipped weapon
+			var currentWeapon = pawn.equipment?.Primary;
+			// Get carried weapons
+			var carriedWeapons = pawn.getCarriedWeapons(true, true);
+			
+			// Check if has a weapon equipped (otherwise the pawn is unarmed) and is carrying weapons
+			if (currentWeapon?.def != null && carriedWeapons?.Count() > 0)
+			{
+				var weapons = new List<ThingWithComps>();
+
+				// If equipped weapon is ranged, find all carried ranged weapons
+				if (currentWeapon.def.IsRangedWeapon)
+				{
+					foreach (var carriedWeapon in carriedWeapons)
+						if (carriedWeapon?.def?.IsRangedWeapon == true)
+							weapons.Add(carriedWeapon);
+				}
+				// ...otherwise find all carried melee weapons
+				else
+				{
+					foreach (var carriedWeapon in carriedWeapons)
+						if (carriedWeapon?.def?.IsMeleeWeapon == true)
+							weapons.Add(carriedWeapon);
+				}
+
+				// Sort weapons by market value (the same is also used by Simple Sidearms for sorting the UI display)
+				weapons.SortStable((a, b) => (int)((b.MarketValue - a.MarketValue) * 1000));
+
+				// Convert weapons to ThingDefStuffDefPairs
+				var pairs = new List<ThingDefStuffDefPair>();
+				foreach (var weapon in weapons)
+				{
+					var stuff = weapon.toThingDefStuffDefPair();
+					if (!pairs.Contains(stuff))
+						pairs.Add(stuff);
+				}
+
+				// Get index and pair of currently equipped weapon
+				var currentPair = currentWeapon.toThingDefStuffDefPair();
+				var index = pairs.IndexOf(currentPair);
+
+				// Return next or previous weapon
+				index += getNext ? 1 : -1;
+				if (index >= 0 && index < pairs.Count())
+					return pairs[index];
+			}
+
+			// No further weapon
+			return null;
+		}
+
+		#region DRAWING METHODS
 		private bool DrawRangedIcon(Vector2 topLeft, KeyBindingDef key)
 		{
 			Rect rect = new Rect
@@ -441,67 +526,9 @@ namespace SwitchWeapons
 				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
 			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
 		}
-		#endregion
-
-		private ThingDefStuffDefPair? GetWeapon(Pawn pawn, bool getNext)
-		{
-			// Shouldn't have a null-pawn, still better to check for it
-			if (pawn == null)
-				return null;
-
-			// Get currently equipped weapon
-			var currentWeapon = pawn.equipment?.Primary;
-			// Get carried weapons
-			var carriedWeapons = pawn.getCarriedWeapons(true, true);
-			
-			// check if has a weapon equipped (otherwise the pawn is unarmed) and is carrying weapons
-			if (currentWeapon?.def != null && carriedWeapons?.Count() > 0)
-			{
-				var weapons = new List<ThingWithComps>();
-
-				// If equipped weapon is ranged, find all carried ranged weapons
-				if (currentWeapon.def.IsRangedWeapon)
-				{
-					foreach (var carriedWeapon in carriedWeapons)
-						if (carriedWeapon?.def?.IsRangedWeapon == true)
-							weapons.Add(carriedWeapon);
-				}
-				// ...otherwise find all carried melee weapons
-				else
-				{
-					foreach (var carriedWeapon in carriedWeapons)
-						if (carriedWeapon?.def?.IsMeleeWeapon == true)
-							weapons.Add(carriedWeapon);
-				}
-
-				// Sort weapons by market value (the same is also used by Simple Sidearms for sorting the UI display)
-				weapons.SortStable((a, b) => (int)((b.MarketValue - a.MarketValue) * 1000));
-
-				// Convert weapons to ThingDefStuffDefPairs
-				var pairs = new List<ThingDefStuffDefPair>();
-				foreach (var weapon in weapons)
-				{
-					var stuff = weapon.toThingDefStuffDefPair();
-					if (!pairs.Contains(stuff))
-						pairs.Add(stuff);
-				}
-
-				// Get index and pair of currently equipped weapon
-				var currentPair = currentWeapon.toThingDefStuffDefPair();
-				var index = pairs.IndexOf(currentPair);
-
-				// Return next or previous weapon
-				index += getNext ? 1 : -1;
-				if (index >= 0 && index < pairs.Count())
-					return pairs[index];
-			}
-			return null;
-		}
-		#endregion
-
 
 		// Borrowed this method from Simple Sidearms - all credits goes to its author - Thanks!
-		public void DrawGizmoLabel(string labelText, Rect gizmoRect)
+		private void DrawGizmoLabel(string labelText, Rect gizmoRect)
 		{
 			var labelHeight = Text.CalcHeight(labelText, gizmoRect.width);
 			labelHeight -= 2f;
@@ -513,5 +540,7 @@ namespace SwitchWeapons
 			Text.Anchor = TextAnchor.UpperLeft;
 			GUI.color = Color.white;
 		}
+		#endregion
+		#endregion
 	}
 }
