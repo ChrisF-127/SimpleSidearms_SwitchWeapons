@@ -186,9 +186,8 @@ namespace SwitchWeapons
 
 				case SwitchButtonEnum.Next:
 					{
-						var switchToWeapon = GetWeapon(_pawn, true);
-						if (switchToWeapon != null)
-							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(switchToWeapon.toThingDefStuffDefPair(), true);
+						if (GetWeapon(_pawn, true) is ThingDefStuffDefPair switchToWeapon)
+							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(switchToWeapon, true);
 
 						// Switch
 						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm);
@@ -196,9 +195,8 @@ namespace SwitchWeapons
 					break;
 				case SwitchButtonEnum.Previous:
 					{
-						var switchToWeapon = GetWeapon(_pawn, false);
-						if (switchToWeapon != null)
-							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(switchToWeapon.toThingDefStuffDefPair(), true);
+						if (GetWeapon(_pawn, false) is ThingDefStuffDefPair switchToWeapon)
+							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(switchToWeapon, true);
 
 						// Switch to unarmed
 						WeaponAssingment.equipBestWeaponFromInventoryByPreference(_pawn, Enums.DroppingModeEnum.Calm);
@@ -390,7 +388,7 @@ namespace SwitchWeapons
 		}
 
 
-		private ThingWithComps GetWeapon(Pawn pawn, bool getNext)
+		private ThingDefStuffDefPair? GetWeapon(Pawn pawn, bool getNext)
 		{
 			if (pawn == null)
 				return null;
@@ -401,7 +399,7 @@ namespace SwitchWeapons
 			var carriedWeapons = pawn.getCarriedWeapons(true, true);
 			if (currentWeapon?.def != null && carriedWeapons?.Count() > 0)
 			{
-				List<ThingWithComps> weapons = new List<ThingWithComps>();
+				var weapons = new List<ThingWithComps>();
 				// Find all carried ranged weapons
 				if (currentWeapon.def.IsRangedWeapon)
 				{
@@ -416,14 +414,27 @@ namespace SwitchWeapons
 						if (carriedWeapon?.def?.IsMeleeWeapon == true)
 							weapons.Add(carriedWeapon);
 				}
+
 				// Sort weapons
 				weapons.SortStable((a, b) => (int)((b.MarketValue - a.MarketValue) * 1000));
 
+				// Weapons to ThingDefStuffDefPairs
+				var pairs = new List<ThingDefStuffDefPair>();
+				foreach (var weapon in weapons)
+				{
+					var stuff = weapon.toThingDefStuffDefPair();
+					if (!pairs.Contains(stuff))
+						pairs.Add(stuff);
+				}
+
+				// get index/pair of current weapon
+				var currentPair = currentWeapon.toThingDefStuffDefPair();
+				var index = pairs.IndexOf(currentPair);
+
 				// Return next or previous weapon
-				var index = weapons.FirstIndexOf((weapon) => weapon == currentWeapon);
 				index += getNext ? 1 : -1;
-				if (index >= 0 && index < weapons.Count())
-					return weapons[index];
+				if (index >= 0 && index < pairs.Count())
+					return pairs[index];
 			}
 			return null;
 		}
