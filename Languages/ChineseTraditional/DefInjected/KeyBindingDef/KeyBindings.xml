@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<SSSW_Ranged.label>切換到遠程</SSSW_Ranged.label>
+  <SSSW_Melee.label>切換到近戰</SSSW_Melee.label>
+  <SSSW_Disable.label>切換到默認</SSSW_Disable.label>
+  <SSSW_Unarmed.label>切換到徒手</SSSW_Unarmed.label>
+  <SSSW_Next.label>切換到下一個武器</SSSW_Next.label>
+  <SSSW_Previous.label>切換到以前的武器</SSSW_Previous.label>
+
+
+</LanguageData>

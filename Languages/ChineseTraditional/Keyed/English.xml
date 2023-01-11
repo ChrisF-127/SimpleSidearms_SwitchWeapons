@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <SSSW_SwitchWeaponsLabel>Simple Sidearms - 切換武器</SSSW_SwitchWeaponsLabel>
+  <SSSW_SwitchWeaponsDesc>在遠程、近戰或徒手之間切換</SSSW_SwitchWeaponsDesc>
+  <SSSW_Switch>切換</SSSW_Switch>
+
+  <SSSW_Ranged>遠程：使用遠程武器</SSSW_Ranged>
+  <SSSW_Melee>近戰：強行使用近戰武器
+（沒有近戰武器沒有效果）</SSSW_Melee>
+  <SSSW_Unarmed>徒手：強行徒手格鬥</SSSW_Unarmed>
+  <SSSW_Disable>首選：使用首選武器</SSSW_Disable>
+
+  <SSSW_Next>下一個：切換到下一個武器
+  (如果攜帶多個遠程或近戰武器)</SSSW_Next>
+  <SSSW_Previous>上一個：切換到上一個武器
+  （如果攜帶多個遠程或近戰武器)</SSSW_Previous>
+
+  <SSSW_ShowAfterDraftToggle>在【徵招/取消徵招】後面顯示</SSSW_ShowAfterDraftToggle>
+  <SSSW_ShowAfterDraftToggleDesc>將「切換」按鈕放在【徵招/取消徵招】之後</SSSW_ShowAfterDraftToggleDesc>
+
+</LanguageData>
