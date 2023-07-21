@@ -79,6 +79,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompSwitchWeapon.cs" />
     <Compile Include="Gizmo_SwitchWeapon.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -138,6 +138,10 @@ namespace SwitchWeapons
 						// Reenable out-of-combat forced weapon/unarmed
 						memory.ForcedWeapon = forcedWeapon;
 						memory.ForcedUnarmed = forcedUnarmed;
+
+						// Remember that we forced a switch to ranged
+						if (_pawn.TryGetComp<CompSwitchWeapon>() is CompSwitchWeapon switchWeapon)
+							switchWeapon.ForceSwitchedToRanged = true;
 					}
 					break;
 				case SwitchButtonEnum.Melee:
@@ -304,7 +308,7 @@ namespace SwitchWeapons
 			// Get currently equipped weapon
 			var currentWeapon = pawn.equipment?.Primary;
 			// Get carried weapons
-			var carriedWeapons = pawn.getCarriedWeapons(true, true);
+			var carriedWeapons = pawn.GetCarriedWeapons(true, true);
 			
 			// Check if has a weapon equipped (otherwise the pawn is unarmed) and is carrying weapons
 			if (currentWeapon?.def != null && carriedWeapons?.Count() > 0)
