@@ -15,7 +15,6 @@ using UnityEngine;
 using Verse;
 using Verse.AI;
 using Verse.Sound;
-using static PeteTimesSix.SimpleSidearms.Utilities.Enums;
 
 namespace SwitchWeapons
 {

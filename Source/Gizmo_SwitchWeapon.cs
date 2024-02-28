@@ -1,5 +1,4 @@
-﻿using HarmonyLib;
-using PeteTimesSix.SimpleSidearms;
+﻿using PeteTimesSix.SimpleSidearms;
 using PeteTimesSix.SimpleSidearms.Utilities;
 using RimWorld;
 using SimpleSidearms.rimworld;
@@ -26,20 +25,24 @@ namespace SwitchWeapons
 			Disable,
 			Unarmed,
 
+			LongRange,
+			MediumRange,
+			ShortRange,
+			Dangerous,
+
 			Next,
 			Previous,
+		}
+
+		private enum SortByEnum
+		{
+			MarketValue = 0,
+			Range = 1,
 		}
 
 		#region FIELDS
 		private const float _iconGap = 1f;
 		private const float _iconSize = 32f;
-
-		private Color _rangedColor = new Color(0.4f, 0.8f, 0.4f);
-		private Color _disableColor = new Color(0.8f, 0.8f, 0.8f);
-		private Color _meleeColor = new Color(0.8f, 0.4f, 0.4f);
-		private Color _unarmedColor = new Color(0.8f, 0.6f, 0.4f);
-
-		private Color _nextPrevColor = new Color(0.8f, 0.8f, 0.8f);
 
 		private Color _baseColor = new Color(0.5f, 0.5f, 0.5f);
 		private Color _highlightColor = new Color(1.0f, 1.0f, 1.0f);
@@ -49,12 +52,8 @@ namespace SwitchWeapons
 
 		private readonly Pawn _pawn = null;
 
-		private readonly KeyBindingDef hotKeyRanged = SwitchWeaponKeyBindingDefOf.SSSW_Ranged;
-		private readonly KeyBindingDef hotKeyMelee = SwitchWeaponKeyBindingDefOf.SSSW_Melee;
-		private readonly KeyBindingDef hotKeyDisable = SwitchWeaponKeyBindingDefOf.SSSW_Disable;
-		private readonly KeyBindingDef hotKeyUnarmed = SwitchWeaponKeyBindingDefOf.SSSW_Unarmed;
-		private readonly KeyBindingDef hotKeyNext = SwitchWeaponKeyBindingDefOf.SSSW_Next;
-		private readonly KeyBindingDef hotKeyPrevious = SwitchWeaponKeyBindingDefOf.SSSW_Previous;
+		// must be static as the gizmo is constantly recreated
+		private static float _columns = 1;
 		#endregion
 
 		#region CONSTRUCTORS
@@ -63,7 +62,6 @@ namespace SwitchWeapons
 			_pawn = pawn;
 			defaultLabel = "SSSW_SwitchWeaponsLabel".Translate();
 			defaultDesc = "SSSW_SwitchWeaponsDesc".Translate();
-
 			shrinkable = false;
 		}
 		#endregion
@@ -80,49 +78,100 @@ namespace SwitchWeapons
 			var gizmoRect = new Rect(topLeft.x, topLeft.y, GetWidth(maxWidth), Height);
 			Widgets.DrawWindowBackground(gizmoRect);
 
-			var buttonTopLeft = new Vector2(topLeft.x + 4, topLeft.y + 2);
-			var button = SwitchButtonEnum.None;
+			var gridColumns = 0;
+			var gridTopLeft = new Vector2(topLeft.x + 4, topLeft.y + 2);
+			var interaction = SwitchButtonEnum.None;
 
 			var oriFont = Text.Font;
 			Text.Font = GameFont.Tiny;
-			if (DrawRangedIcon(buttonTopLeft, hotKeyRanged))
-				button = SwitchButtonEnum.Ranged;
-			if (DrawMeleeIcon(buttonTopLeft, hotKeyMelee))
-				button = SwitchButtonEnum.Melee;
-			if (DrawDisableIcon(buttonTopLeft, hotKeyDisable))
-				button = SwitchButtonEnum.Disable;
-			if (DrawUnarmedIcon(buttonTopLeft, hotKeyUnarmed))
-				button = SwitchButtonEnum.Unarmed;
+			if (DrawButton(calcGridRect(0, 0), TextureResources.ForceRanged, new Color(0.4f, 0.8f, 0.4f), "SSSW_Ranged", SWKeyBindingDefOf.SSSW_Ranged))
+				interaction = SwitchButtonEnum.Ranged;
+			if (DrawButton(calcGridRect(0, 1), TextureResources.ForceMelee, new Color(0.8f, 0.4f, 0.4f), "SSSW_Melee", SWKeyBindingDefOf.SSSW_Melee))
+				interaction = SwitchButtonEnum.Melee;
+			if (DrawButton(calcGridRect(1, 1), TextureResources.ForceUnarmed, new Color(0.8f, 0.6f, 0.4f), "SSSW_Unarmed", SWKeyBindingDefOf.SSSW_Unarmed))
+				interaction = SwitchButtonEnum.Unarmed;
 
-			// would love for these buttons only to appear if the pawn(s) carry any weapons that can be switched to, but for performance reasons it is probably better not to do that
-			if (DrawNextIcon(buttonTopLeft, hotKeyNext))
-				button = SwitchButtonEnum.Next;
-			if (DrawPreviousIcon(buttonTopLeft, hotKeyPrevious))
-				button = SwitchButtonEnum.Previous;
-			Text.Font = Text.Font;
+#warning TODO dangerous symbol?
+#warning TODO translations (settings, buttons, tooltips, etc.)
+#warning TODO grid positions!
+			if (SwitchWeapons.ShowLongRangeSwitch)
+			{
+				if (DrawButton(calcGridRect(1, 0), TextureResources.LongRange, new Color(0.8f, 0.8f, 0.4f), "SSSW_LongRange", SWKeyBindingDefOf.SSSW_LongRange))
+					interaction = SwitchButtonEnum.LongRange;
+			}
+			if (SwitchWeapons.ShowMediumRangeSwitch)
+			{
+				if (DrawButton(calcGridRect(2, 0), TextureResources.MediumRange, new Color(0.8f, 0.6f, 0.4f), "SSSW_MediumRange", SWKeyBindingDefOf.SSSW_MediumRange))
+					interaction = SwitchButtonEnum.MediumRange;
+			}
+			if (SwitchWeapons.ShowShortRangeSwitch)
+			{
+				if (DrawButton(calcGridRect(3, 0), TextureResources.ShortRange, new Color(0.8f, 0.4f, 0.4f), "SSSW_ShortRange", SWKeyBindingDefOf.SSSW_ShortRange))
+					interaction = SwitchButtonEnum.ShortRange;
+			}
+
+			if (SwitchWeapons.ShowDangerousSwitch)
+			{
+				if (DrawButton(calcGridRect(2, 1), TextureResources.Dangerous, new Color(0.8f, 0.4f, 0.4f), "SSSW_Dangerous", SWKeyBindingDefOf.SSSW_Dangerous))
+					interaction = SwitchButtonEnum.Dangerous;
+			}
+
+			if (DrawButton(calcGridRect(3, 1), TextureResources.Disable, new Color(0.8f, 0.8f, 0.8f), "SSSW_Disable", SWKeyBindingDefOf.SSSW_Disable))
+				interaction = SwitchButtonEnum.Disable;
+
+			if (SwitchWeapons.ShowPrevNextSwitch)
+			{
+				var column = gridColumns;
+				var nextPrevColor = new Color(0.8f, 0.8f, 0.8f);
+				if (DrawButton(calcGridRect(column, 0), TextureResources.Next, nextPrevColor, "SSSW_Next", SWKeyBindingDefOf.SSSW_Next))
+					interaction = SwitchButtonEnum.Next;
+				if (DrawButton(calcGridRect(column, 1), TextureResources.Previous, nextPrevColor, "SSSW_Previous", SWKeyBindingDefOf.SSSW_Previous))
+					interaction = SwitchButtonEnum.Previous;
+			}
 
 			DrawGizmoLabel("SSSW_Switch".Translate(), gizmoRect);
 
-			if (button != SwitchButtonEnum.None)
-				return new GizmoResult(GizmoState.Interacted, new Event(Event.current) { button = (int)button });
+			Text.Font = oriFont;
+			_columns = gridColumns;
+
+			if (interaction != SwitchButtonEnum.None)
+				return new GizmoResult(GizmoState.Interacted, new Event(Event.current) { button = (int)interaction });
 			return new GizmoResult(GizmoState.Clear);
+
+			Rect calcGridRect(int x, int y)
+			{
+				if (gridColumns <= x)
+					gridColumns = x + 1; 
+				return new Rect(
+					gridTopLeft.x + (_iconGap + _iconSize) * x, 
+					gridTopLeft.y + (_iconGap + _iconSize) * y, 
+					_iconSize, 
+					_iconSize);
+			}
 		}
 
 		public override float GetWidth(float maxWidth) => 
-			_iconSize * 3 + _iconGap * 2 + 8;
+			_iconSize * _columns + _iconGap * (_columns - 1) + 8;
 
 		public override void ProcessInput(Event ev)
 		{
 			base.ProcessInput(ev);
 
-			switch ((SwitchButtonEnum)ev.button)
+			var interaction = (SwitchButtonEnum)ev.button;
+			if (interaction == SwitchButtonEnum.None)
+				return;
+
+			// Get Sidearm memory
+			var memory = CompSidearmMemory.GetMemoryCompForPawn(_pawn);
+
+			// Unset forced weapons
+			memory.UnsetForcedWeapon(true);
+
+			// Handle interaction
+			switch (interaction)
 			{
 				case SwitchButtonEnum.Ranged:
 					{
-						// Unset forced weapons
-						var memory = CompSidearmMemory.GetMemoryCompForPawn(_pawn);
-						memory.UnsetForcedWeapon(true);
-
 						// Disable out-of-combat forced weapon/unarmed
 						var forcedWeapon = memory.ForcedWeapon;
 						var forcedUnarmed = memory.ForcedUnarmed;
@@ -146,10 +195,6 @@ namespace SwitchWeapons
 					break;
 				case SwitchButtonEnum.Melee:
 					{
-						// Unset forced weapons
-						var memory = CompSidearmMemory.GetMemoryCompForPawn(_pawn);
-						memory.UnsetForcedWeapon(true);
-
 						// Disable out-of-combat forced weapon/unarmed
 						var forcedWeapon = memory.ForcedWeapon;
 						if (forcedWeapon?.thing?.IsMeleeWeapon == false)
@@ -170,11 +215,6 @@ namespace SwitchWeapons
 					break;
 				case SwitchButtonEnum.Disable:
 					{
-						var memory = CompSidearmMemory.GetMemoryCompForPawn(_pawn);
-
-						// Unset forced weapons
-						memory.UnsetForcedWeapon(true);
-
 						// Switch according to preference
 						// ranged
 						if (UseRanged(memory))
@@ -198,12 +238,6 @@ namespace SwitchWeapons
 					break;
 				case SwitchButtonEnum.Unarmed:
 					{
-						// Unset forced weapons
-						var memory = CompSidearmMemory.GetMemoryCompForPawn(_pawn);
-
-						// Unset forced weapons, otherwise it won't switch to unarmed
-						memory.UnsetForcedWeapon(true);
-
 						// Set unarmed as forced
 						memory.SetUnarmedAsForced(true);
 
@@ -213,13 +247,95 @@ namespace SwitchWeapons
 					}
 					break;
 
+				case SwitchButtonEnum.LongRange:
+					{
+						// Find highest DPS weapon for range
+						var bestWeapon = GetBestDPSWeaponForRange(SwitchWeapons.LongRangeTarget.Value);
+						if (bestWeapon != null)
+						{
+							var pair = bestWeapon.toThingDefStuffDefPair();
+
+							// Set weapon as forced so it sticks
+							memory.SetWeaponAsForced(pair, true);
+
+							// Switch to weapon
+							if (!SwitchTo(pair))
+								Log.Warning("Simple Sidearms - Switch Weapons: [LongRange] switching to long range failed");
+						}
+					}
+					break;
+				case SwitchButtonEnum.MediumRange:
+					{
+						// Find highest DPS weapon for range
+						var bestWeapon = GetBestDPSWeaponForRange(SwitchWeapons.MediumRangeTarget.Value);
+						if (bestWeapon != null)
+						{
+							var pair = bestWeapon.toThingDefStuffDefPair();
+
+							// Set weapon as forced so it sticks
+							memory.SetWeaponAsForced(pair, true);
+
+							// Switch to weapon
+							if (!SwitchTo(pair))
+								Log.Warning("Simple Sidearms - Switch Weapons: [MediumRange] switching to medium range failed");
+						}
+					}
+					break;
+				case SwitchButtonEnum.ShortRange:
+					{
+						// Find highest DPS weapon for range
+						var bestWeapon = GetBestDPSWeaponForRange(SwitchWeapons.ShortRangeTarget.Value);
+						if (bestWeapon != null)
+						{
+							var pair = bestWeapon.toThingDefStuffDefPair();
+
+							// Set weapon as forced so it sticks
+							memory.SetWeaponAsForced(pair, true);
+
+							// Switch to weapon
+							if (!SwitchTo(pair))
+								Log.Warning("Simple Sidearms - Switch Weapons: [ShortRange] switching to short range failed");
+						}
+					}
+					break;
+
+				case SwitchButtonEnum.Dangerous:
+					{
+						// Find next dangerous weapon
+						var (current, carried) = GetCurrentAndCarriedWeapons(_pawn);
+
+						// All weapons to list
+						var weapons = new List<ThingWithComps>();
+						foreach (var weapon in carried)
+						{
+							if (GettersFilters.isDangerousWeapon(weapon)
+								|| GettersFilters.isEMPWeapon(weapon))
+								weapons.Add(weapon);
+						}
+
+						// Find next or first
+						var found = GetPrevNextFromList(current, weapons, true, SwitchWeapons.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue);
+						if (found == current.toThingDefStuffDefPair())
+							found = weapons.FirstOrDefault()?.toThingDefStuffDefPair();
+						if (found is ThingDefStuffDefPair pair)
+						{
+							// Set weapon as forced so it sticks
+							memory.SetWeaponAsForced(pair, true);
+
+							// Switch to weapon
+							if (!SwitchTo(pair))
+								Log.Warning("Simple Sidearms - Switch Weapons: [Dangerous] switching to dangerous failed");
+						}
+					}
+					break;
+
 				case SwitchButtonEnum.Next:
 					{
 						// Try find next weapon to switch to
-						if (GetWeapon(_pawn, true) is ThingDefStuffDefPair pair)
+						if (GetPrevNext(_pawn, true) is ThingDefStuffDefPair pair)
 						{
 							// Set weapon as forced so it sticks
-							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(pair, true);
+							memory.SetWeaponAsForced(pair, true);
 
 							// Switch to weapon
 							if (!SwitchTo(pair))
@@ -230,10 +346,10 @@ namespace SwitchWeapons
 				case SwitchButtonEnum.Previous:
 					{
 						// Try find previous weapon to switch to
-						if (GetWeapon(_pawn, false) is ThingDefStuffDefPair pair)
+						if (GetPrevNext(_pawn, false) is ThingDefStuffDefPair pair)
 						{
 							// Set weapon as forced so it sticks
-							CompSidearmMemory.GetMemoryCompForPawn(_pawn).SetWeaponAsForced(pair, true);
+							memory.SetWeaponAsForced(pair, true);
 
 							// Switch to weapon
 							if (!SwitchTo(pair))
@@ -243,7 +359,7 @@ namespace SwitchWeapons
 					break;
 
 				default:
-				case SwitchButtonEnum.None:
+					Log.Error($"Simple Sidearms - Switch Weapons: encountered unknown interaction: {interaction}");
 					break;
 			}
 		}
@@ -299,86 +415,221 @@ namespace SwitchWeapons
 		private bool IsFumbleDrop() =>
 			MiscUtils.shouldDrop(_pawn, DroppingModeEnum.Combat, false);
 
-		private ThingDefStuffDefPair? GetWeapon(Pawn pawn, bool getNext)
+		private (ThingWithComps current, List<ThingWithComps> carried) GetCurrentAndCarriedWeapons(Pawn pawn)
 		{
 			// Shouldn't have a null-pawn, still better to check for it
 			if (pawn == null)
-				return null;
+				return (null, null);
 
 			// Get currently equipped weapon
 			var currentWeapon = pawn.equipment?.Primary;
 			// Get carried weapons
 			var carriedWeapons = pawn.GetCarriedWeapons(true, true);
-			
-			// Check if has a weapon equipped (otherwise the pawn is unarmed) and is carrying weapons
-			if (currentWeapon?.def != null && carriedWeapons?.Count() > 0)
+
+			return (currentWeapon, carriedWeapons);
+		}
+
+		private ThingDefStuffDefPair? GetPrevNext(Pawn pawn, bool getNext)
+		{
+			var (current, carried) = GetCurrentAndCarriedWeapons(pawn);
+			if (current == null || carried == null)
+				return null;
+
+			Func<ThingWithComps, bool> isValid;
+			// If skipping dangerous is disabled
+			if (!SwitchWeapons.PrevNextSkipDangerous)
+				isValid = thing => true;
+			// ...otherwise if equipped weapon is non-dangerous only non-dangerous weapons are valid
+			else if (!GettersFilters.isDangerousWeapon(current))
+				isValid = thing => !GettersFilters.isDangerousWeapon(thing);
+			// ...otherwise only dangerous weapons are valid
+			else
+				isValid = thing => GettersFilters.isDangerousWeapon(thing);
+
+			var weapons = new List<ThingWithComps>();
+			// If equipped weapon is ranged, find all carried ranged weapons
+			if (current.def.IsRangedWeapon)
 			{
-				var weapons = new List<ThingWithComps>();
-
-				// If equipped weapon is ranged, find all carried ranged weapons
-				if (currentWeapon.def.IsRangedWeapon)
-				{
-					foreach (var carriedWeapon in carriedWeapons)
-						if (carriedWeapon?.def?.IsRangedWeapon == true)
-							weapons.Add(carriedWeapon);
-				}
-				// ...otherwise find all carried melee weapons
-				else
-				{
-					foreach (var carriedWeapon in carriedWeapons)
-						if (carriedWeapon?.def?.IsMeleeWeapon == true)
-							weapons.Add(carriedWeapon);
-				}
-
-				// Sort weapons by market value (the same is also used by Simple Sidearms for sorting the UI display)
-				weapons.SortStable((a, b) => (int)((b.MarketValue - a.MarketValue) * 1000));
-
-				// Convert weapons to ThingDefStuffDefPairs
-				var pairs = new List<ThingDefStuffDefPair>();
-				foreach (var weapon in weapons)
-				{
-					var stuff = weapon.toThingDefStuffDefPair();
-					if (!pairs.Contains(stuff))
-						pairs.Add(stuff);
-				}
-
-				// Get index and pair of currently equipped weapon
-				var currentPair = currentWeapon.toThingDefStuffDefPair();
-				var index = pairs.IndexOf(currentPair);
-
-				// Return next or previous weapon
-				index += getNext ? 1 : -1;
-				if (index >= 0 && index < pairs.Count())
-					return pairs[index];
+				foreach (var carriedWeapon in carried)
+					if (carriedWeapon?.def?.IsRangedWeapon == true && isValid(carriedWeapon))
+						weapons.Add(carriedWeapon);
+			}
+			// ...otherwise find all carried melee weapons
+			else
+			{
+				foreach (var carriedWeapon in carried)
+					if (carriedWeapon?.def?.IsMeleeWeapon == true && isValid(carriedWeapon))
+						weapons.Add(carriedWeapon);
 			}
 
+			// Get from list
+			var sortBy = SwitchWeapons.PrevNextSortByRange && current.def.IsRangedWeapon ? SortByEnum.Range : SortByEnum.MarketValue;
+			return GetPrevNextFromList(current, weapons, getNext, sortBy);
+		}
+		private ThingDefStuffDefPair? GetPrevNextFromList(ThingWithComps current, List<ThingWithComps> weapons, bool getNext, SortByEnum sortBy)
+		{
+			// Sort list
+			switch (sortBy)
+			{
+				case SortByEnum.MarketValue:
+					weapons.SortStable(SortByMarketValue);
+					break;
+				case SortByEnum.Range:
+					weapons.SortStable(SortByRange);
+					break;
+			}
+
+			// If none select, get first or last
+			if (current == null)
+				return (getNext ? weapons.FirstOrDefault() : weapons.LastOrDefault())?.toThingDefStuffDefPair();
+
+			// Convert weapons to ThingDefStuffDefPairs
+			var pairs = new List<ThingDefStuffDefPair>();
+			foreach (var weapon in weapons)
+			{
+				var stuff = weapon.toThingDefStuffDefPair();
+				if (!pairs.Contains(stuff))
+					pairs.Add(stuff);
+			}
+
+			// Get index and pair of currently equipped weapon
+			var currentPair = current.toThingDefStuffDefPair();
+			var index = pairs.IndexOf(currentPair);
+
+			// Return next or previous weapon
+			index += getNext ? 1 : -1;
+			if (index >= 0 && index < pairs.Count())
+				return pairs[index];
+
 			// No further weapon
-			return null;
+			return currentPair;
+		}
+
+		private ThingWithComps GetBestDPSWeaponForRange(float range)
+		{
+			var bestWeapon = default(ThingWithComps);
+			var bestDPS = 0f;
+			foreach (var weapon in GetCurrentAndCarriedWeapons(_pawn).carried)
+			{
+				if (weapon.def.IsRangedWeapon
+					&& !GettersFilters.isDangerousWeapon(weapon)
+					&& !GettersFilters.isEMPWeapon(weapon))
+				{
+					var dps = GetDPSAtRange(weapon, range);
+					if (dps > bestDPS)
+					{
+						bestWeapon = weapon;
+						bestDPS = dps;
+					}
+				}
+			}
+			return bestWeapon;
+		}
+
+		// Sort by market value (the same is also used by Simple Sidearms for sorting the UI display)
+		private int SortByMarketValue(ThingWithComps a, ThingWithComps b)
+		{
+			var diff = (int)((b.MarketValue - a.MarketValue) * 1000);
+			if (diff != 0)
+				return diff;
+			diff = (int)((GetDPS(b) - GetDPS(a)) * 1000);
+			if (diff != 0) 
+				return diff;
+			return b.GetHashCode() - a.GetHashCode();
+		}
+		// Sort by range
+		private int SortByRange(ThingWithComps a, ThingWithComps b)
+		{
+			var aRange = GetWeaponRange(a);
+			var bRange = GetWeaponRange(b);
+			if ((int?)((bRange - aRange) * 1000) is int diff)
+			{
+				if (diff != 0)
+					return diff;
+				diff = (int)((GetDPS(b) - GetDPS(a)) * 1000);
+				if (diff != 0)
+					return diff;
+			}
+			else
+			{
+				if (bRange != null)
+					return 1;
+				if (aRange != null)
+					return -1;
+			}
+			return b.GetHashCode() - a.GetHashCode();
+		}
+
+		private float? GetWeaponRange(ThingWithComps weapon) =>
+			weapon.def.Verbs?.FirstOrDefault(v => v.Ranged)?.range;
+
+		private float GetDPSAtRange(ThingWithComps thing, float range) =>
+			GetDPS(thing) * GetRangeFactor(thing, range);
+		private float GetDPS(ThingWithComps thing)
+		{
+			var verbProps = thing?.def?.Verbs?.FirstOrDefault(v => v.Ranged);
+			if (verbProps == null)
+				return 0f;
+
+			var burstCount = verbProps.burstShotCount;
+			var roundsPerMinute = verbProps.ticksBetweenBurstShots > 0 ? 3600.0f / verbProps.ticksBetweenBurstShots : verbProps.ticksBetweenBurstShots == 0 ? float.PositiveInfinity : 1;
+			var cooldownInSeconds = thing.GetStatValue(StatDefOf.RangedWeapon_Cooldown);
+			var warmupInSeconds = verbProps.warmupTime;
+
+			float damagePerShot = 0f;
+			var projectile = verbProps.defaultProjectile?.projectile;
+			if (projectile != null)
+				damagePerShot = projectile.GetDamageAmount(1);
+
+			var dps = damagePerShot * burstCount / (((burstCount - 1.0f) * 60.0f / roundsPerMinute) + cooldownInSeconds + warmupInSeconds);
+			Log.Message($"{thing} DPS  {damagePerShot} * {burstCount} / ((({burstCount} - 1.0) * 60.0 / {roundsPerMinute}) + {cooldownInSeconds} + {warmupInSeconds} = {dps}");
+			return dps;
+		}
+		private float GetRangeFactor(ThingWithComps thing, float range)
+		{
+			var verbProps = thing?.def?.Verbs?.FirstOrDefault(v => v.Ranged);
+			if (verbProps == null || range > verbProps.range)
+				return 0f;
+
+			var accuracyTouch = thing.GetStatValue(StatDefOf.AccuracyTouch);
+			var accuracyShort = thing.GetStatValue(StatDefOf.AccuracyShort);
+			var accuracyMedium = thing.GetStatValue(StatDefOf.AccuracyMedium);
+			var accuracyLong = thing.GetStatValue(StatDefOf.AccuracyLong);
+
+			float dpsFactorRange;
+			if (range < 3)
+				dpsFactorRange = accuracyTouch;
+			else if (range < 12)
+				dpsFactorRange = interpolate(3, 12, accuracyTouch, accuracyShort, range);
+			else if (range < 25)
+				dpsFactorRange = interpolate(12, 25, accuracyShort, accuracyMedium, range);
+			else if (range < 40)
+				dpsFactorRange = interpolate(25, 40, accuracyMedium, accuracyLong, range);
+			else
+				dpsFactorRange = accuracyLong;
+
+			Log.Message($"{thing} RFAC 3={accuracyTouch} 12={accuracyShort} 25={accuracyMedium} 40={accuracyLong} {range}={dpsFactorRange}");
+			return dpsFactorRange;
+
+			float interpolate(float x0, float x1, float y0, float y1, float x) =>
+				(y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
 		}
 
 		#region DRAWING METHODS
-		private bool DrawRangedIcon(Vector2 topLeft, KeyBindingDef key)
+		private bool DrawButton(Rect rect, Texture texture, Color color, string toolTip, KeyBindingDef key)
 		{
-			Rect rect = new Rect
-			{
-				x = topLeft.x,
-				y = topLeft.y,
-				width = _iconSize,
-				height = _iconSize,
-			};
-
 			var oriColor = GUI.color;
 			if (Mouse.IsOver(rect))
 			{
-				TooltipHandler.TipRegion(rect, "SSSW_Ranged".Translate());
+				TooltipHandler.TipRegion(rect, toolTip.Translate());
 				MouseoverSounds.DoRegion(rect, SoundDefOf.Mouseover_Command);
 				GUI.color = _highlightColor;
 			}
 			else
 				GUI.color = _baseColor;
 			GUI.DrawTexture(rect, TextureResources.Background);
-			GUI.color = _rangedColor;
-			GUI.DrawTexture(rect, TextureResources.ForceRanged);
+			GUI.color = color;
+			GUI.DrawTexture(rect, texture);
 			GUI.color = oriColor;
 
 			if (key != null && key.MainKey != KeyCode.None)
@@ -386,156 +637,9 @@ namespace SwitchWeapons
 			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
 		}
 
-		private bool DrawMeleeIcon(Vector2 topLeft, KeyBindingDef key)
-		{
-			Rect rect = new Rect
-			{
-				x = topLeft.x,
-				y = topLeft.y + _iconGap + _iconSize,
-				width = _iconSize,
-				height = _iconSize,
-			};
-
-			var oriColor = GUI.color;
-			if (Mouse.IsOver(rect))
-			{
-				TooltipHandler.TipRegion(rect, "SSSW_Melee".Translate());
-				MouseoverSounds.DoRegion(rect, SoundDefOf.Mouseover_Command);
-				GUI.color = _highlightColor;
-			}
-			else
-				GUI.color = _baseColor;
-			GUI.DrawTexture(rect, TextureResources.Background);
-			GUI.color = _meleeColor;
-			GUI.DrawTexture(rect, TextureResources.ForceMelee);
-			GUI.color = oriColor;
-
-			if (key != null && key.MainKey != KeyCode.None)
-				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
-			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
-		}
-
-		private bool DrawDisableIcon(Vector2 topLeft, KeyBindingDef key)
-		{
-			Rect rect = new Rect
-			{
-				x = topLeft.x + _iconGap + _iconSize,
-				y = topLeft.y,
-				width = _iconSize,
-				height = _iconSize,
-			};
-
-			var oriColor = GUI.color;
-			if (Mouse.IsOver(rect))
-			{
-				TooltipHandler.TipRegion(rect, "SSSW_Disable".Translate());
-				MouseoverSounds.DoRegion(rect, SoundDefOf.Mouseover_Command);
-				GUI.color = _highlightColor;
-			}
-			else
-				GUI.color = _baseColor;
-			GUI.DrawTexture(rect, TextureResources.Background);
-			GUI.color = _disableColor;
-			GUI.DrawTexture(rect, TextureResources.Disable);
-			GUI.color = oriColor;
-
-			if (key != null && key.MainKey != KeyCode.None)
-				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
-			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
-		}
-
-		private bool DrawUnarmedIcon(Vector2 topLeft, KeyBindingDef key)
-		{
-			Rect rect = new Rect
-			{
-				x = topLeft.x + _iconGap + _iconSize,
-				y = topLeft.y + _iconGap + _iconSize,
-				width = _iconSize,
-				height = _iconSize,
-			};
-
-			var oriColor = GUI.color;
-			if (Mouse.IsOver(rect))
-			{
-				TooltipHandler.TipRegion(rect, "SSSW_Unarmed".Translate());
-				MouseoverSounds.DoRegion(rect, SoundDefOf.Mouseover_Command);
-				GUI.color = _highlightColor;
-			}
-			else
-				GUI.color = _baseColor;
-			GUI.DrawTexture(rect, TextureResources.Background);
-			GUI.color = _unarmedColor;
-			GUI.DrawTexture(rect, TextureResources.ForceUnarmed);
-			GUI.color = oriColor;
-
-			if (key != null && key.MainKey != KeyCode.None)
-				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
-			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
-		}
-
-		private bool DrawNextIcon(Vector2 topLeft, KeyBindingDef key)
-		{
-			Rect rect = new Rect
-			{
-				x = topLeft.x + _iconGap * 2 + _iconSize * 2,
-				y = topLeft.y,
-				width = _iconSize,
-				height = _iconSize,
-			};
-
-			var oriColor = GUI.color;
-			if (Mouse.IsOver(rect))
-			{
-				TooltipHandler.TipRegion(rect, "SSSW_Next".Translate());
-				MouseoverSounds.DoRegion(rect, SoundDefOf.Mouseover_Command);
-				GUI.color = _highlightColor;
-			}
-			else
-				GUI.color = _baseColor;
-			GUI.DrawTexture(rect, TextureResources.Background);
-			GUI.color = _nextPrevColor;
-			GUI.DrawTexture(rect, TextureResources.Next);
-			GUI.color = oriColor;
-
-			if (key != null && key.MainKey != KeyCode.None)
-				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
-			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
-		}
-
-		private bool DrawPreviousIcon(Vector2 topLeft, KeyBindingDef key)
-		{
-			Rect rect = new Rect
-			{
-				x = topLeft.x + _iconGap * 2 + _iconSize * 2,
-				y = topLeft.y + _iconGap + _iconSize,
-				width = _iconSize,
-				height = _iconSize,
-			};
-
-			var oriColor = GUI.color;
-			if (Mouse.IsOver(rect))
-			{
-				TooltipHandler.TipRegion(rect, "SSSW_Previous".Translate());
-				MouseoverSounds.DoRegion(rect, SoundDefOf.Mouseover_Command);
-				GUI.color = _highlightColor;
-			}
-			else
-				GUI.color = _baseColor;
-			GUI.DrawTexture(rect, TextureResources.Background);
-			GUI.color = _nextPrevColor;
-			GUI.DrawTexture(rect, TextureResources.Previous);
-			GUI.color = oriColor;
-
-			if (key != null && key.MainKey != KeyCode.None)
-				Widgets.Label(rect.ContractedBy(_hotKeyLabelRectMarginX, _hotKeyLabelRectMarginY), key.MainKey.ToStringReadable());
-			return Widgets.ButtonInvisible(rect, true) || key.KeyDownEvent;
-		}
-
-		// Borrowed this method from Simple Sidearms - all credits goes to its author - Thanks!
 		private void DrawGizmoLabel(string labelText, Rect gizmoRect)
 		{
 			var labelHeight = Text.CalcHeight(labelText, gizmoRect.width);
-			labelHeight -= 2f;
 			var labelRect = new Rect(gizmoRect.x, gizmoRect.yMax - labelHeight + 12f, gizmoRect.width, labelHeight);
 			GUI.DrawTexture(labelRect, TexUI.GrayTextBG);
 			GUI.color = Color.white;

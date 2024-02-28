@@ -49,7 +49,7 @@
     <Compile Include="Gizmo_SwitchWeapon.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SwitchWeaponKeyBindingDefOf.cs" />
+    <Compile Include="SWKeyBindingDefOf.cs" />
     <Compile Include="SwitchWeapons.cs" />
     <Compile Include="TextureResources.cs" />
   </ItemGroup>

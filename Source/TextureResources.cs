@@ -18,6 +18,11 @@ namespace SwitchWeapons
 		public static readonly Texture2D ForceUnarmed = ContentFinder<Texture2D>.Get("unarmed", true);
 		public static readonly Texture2D Disable = ContentFinder<Texture2D>.Get("disable", true);
 
+		public static readonly Texture2D LongRange = ContentFinder<Texture2D>.Get("longrange", true);
+		public static readonly Texture2D MediumRange = ContentFinder<Texture2D>.Get("mediumrange", true);
+		public static readonly Texture2D ShortRange = ContentFinder<Texture2D>.Get("shortrange", true);
+		public static readonly Texture2D Dangerous = ContentFinder<Texture2D>.Get("dangerous", true);
+
 		public static readonly Texture2D Next = ContentFinder<Texture2D>.Get("next", true);
 		public static readonly Texture2D Previous = ContentFinder<Texture2D>.Get("previous", true);
 	}
