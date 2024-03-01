@@ -45,10 +45,10 @@
 	<SSSW_ShowDangerousSwitch>Show dangerous/EMP button</SSSW_ShowDangerousSwitch>
 	<SSSW_ShowDangerousSwitchDesc>Enable button for forcing pawns to use dangerous weapons like grenades or rocket launchers</SSSW_ShowDangerousSwitchDesc>
 	
-	<SSSW_ShowPrevNextSwitch>Show Previous/Next buttons</SSSW_ShowPrevNextSwitch>
+	<SSSW_ShowPrevNextSwitch>Show previous/next buttons</SSSW_ShowPrevNextSwitch>
 	<SSSW_ShowPrevNextSwitchDesc>Enable previous/next-buttons in UI which allow iterating through available weapons</SSSW_ShowPrevNextSwitchDesc>
 	
-	<SSSW_PrevNextSortByRange>Sort Previous/Next by range</SSSW_PrevNextSortByRange>
+	<SSSW_PrevNextSortByRange>Sort previous/next by range</SSSW_PrevNextSortByRange>
 	<SSSW_PrevNextSortByRangeDesc>Sorts weapons by range (and max. DPS if range is equal) when iterating via previous/next-buttons otherwise sorting goes by market value (similar to Simple Sidearms gizmo)</SSSW_PrevNextSortByRangeDesc>
 	
 	<SSSW_PrevNextSkipDangerous>Previous/Next skips dangerous weapons</SSSW_PrevNextSkipDangerous>
