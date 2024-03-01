@@ -11,6 +11,11 @@
 	<SSSW_Unarmed>Unarmed: force unarmed fighting</SSSW_Unarmed>
 	<SSSW_Disable>Preferred: use preferred weapon</SSSW_Disable>
 	
+	<SSSW_LongRange>Long range: force using long range weapon</SSSW_LongRange>
+	<SSSW_MediumRange>Medium range: force using medium range weapon</SSSW_MediumRange>
+	<SSSW_ShortRange>Short range: force using short range weapon</SSSW_ShortRange>
+	<SSSW_Dangerous>Dangerous: force using dangerous/EMP weapon</SSSW_Dangerous>
+	
 	<SSSW_Next>Next: switch to next weapon
 (if carrying multiple ranged or melee weapons)</SSSW_Next>
 	<SSSW_Previous>Previous: switch to previous weapon
@@ -18,5 +23,35 @@
 
 	<SSSW_ShowAfterDraftToggle>Show after "Draft/Undraft" gizmo</SSSW_ShowAfterDraftToggle>
 	<SSSW_ShowAfterDraftToggleDesc>Will put the "Switch" gizmo after the "Draft/Undraft" gizmo</SSSW_ShowAfterDraftToggleDesc>
+	
+	<SSSW_ShowLongRangeSwitch>Show long range button</SSSW_ShowLongRangeSwitch>
+	<SSSW_ShowLongRangeSwitchDesc>Enable button for forcing pawns to use weapons with best DPS at long range</SSSW_ShowLongRangeSwitchDesc>
+	
+	<SSSW_LongRangeTarget>Long range distance</SSSW_LongRangeTarget>
+	<SSSW_LongRangeTargetDesc>Forcing "long range" usage will look for the weapon with the highest DPS at this range [default: 40]</SSSW_LongRangeTargetDesc>
+	
+	<SSSW_ShowMediumRangeSwitch>Show medium range button</SSSW_ShowMediumRangeSwitch>
+	<SSSW_ShowMediumRangeSwitchDesc>Enable button for forcing pawns to use weapons with best DPS at medium range</SSSW_ShowMediumRangeSwitchDesc>
+	
+	<SSSW_MediumRangeTarget>Medium range distance</SSSW_MediumRangeTarget>
+	<SSSW_MediumRangeTargetDesc>Forcing "medium range" usage will look for the weapon with the highest DPS at this range [default: 25]</SSSW_MediumRangeTargetDesc>
+	
+	<SSSW_ShowShortRangeSwitch>Show short range button</SSSW_ShowShortRangeSwitch>
+	<SSSW_ShowShortRangeSwitchDesc>Enable button for forcing pawns to use weapons with best DPS at short range</SSSW_ShowShortRangeSwitchDesc>
+	
+	<SSSW_ShortRangeTarget>Short range distance</SSSW_ShortRangeTarget>
+	<SSSW_ShortRangeTargetDesc>Forcing "short range" usage will look for the weapon with the highest DPS at this range [default: 12]</SSSW_ShortRangeTargetDesc>
+	
+	<SSSW_ShowDangerousSwitch>Show dangerous/EMP button</SSSW_ShowDangerousSwitch>
+	<SSSW_ShowDangerousSwitchDesc>Enable button for forcing pawns to use dangerous weapons like grenades or rocket launchers</SSSW_ShowDangerousSwitchDesc>
+	
+	<SSSW_ShowPrevNextSwitch>Show Previous/Next buttons</SSSW_ShowPrevNextSwitch>
+	<SSSW_ShowPrevNextSwitchDesc>Enable previous/next-buttons in UI which allow iterating through available weapons</SSSW_ShowPrevNextSwitchDesc>
+	
+	<SSSW_PrevNextSortByRange>Sort Previous/Next by range</SSSW_PrevNextSortByRange>
+	<SSSW_PrevNextSortByRangeDesc>Sorts weapons by range (and max. DPS if range is equal) when iterating via previous/next-buttons otherwise sorting goes by market value (similar to Simple Sidearms gizmo)</SSSW_PrevNextSortByRangeDesc>
+	
+	<SSSW_PrevNextSkipDangerous>Previous/Next skips dangerous weapons</SSSW_PrevNextSkipDangerous>
+	<SSSW_PrevNextSkipDangerousDesc>Skips dangerous weapons when using previous/next-buttons if active (does not skip EMP weapons)</SSSW_PrevNextSkipDangerousDesc>
 
 </LanguageData>

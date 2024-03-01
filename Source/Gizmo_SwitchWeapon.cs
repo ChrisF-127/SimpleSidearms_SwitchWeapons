@@ -91,22 +91,20 @@ namespace SwitchWeapons
 			if (DrawButton(calcGridRect(1, 1), TextureResources.ForceUnarmed, new Color(0.8f, 0.6f, 0.4f), "SSSW_Unarmed", SWKeyBindingDefOf.SSSW_Unarmed))
 				interaction = SwitchButtonEnum.Unarmed;
 
-#warning TODO dangerous symbol?
-#warning TODO translations (settings, buttons, tooltips, etc.)
-#warning TODO grid positions!
+			var column = 1;
 			if (SwitchWeapons.ShowLongRangeSwitch)
 			{
-				if (DrawButton(calcGridRect(1, 0), TextureResources.LongRange, new Color(0.8f, 0.8f, 0.4f), "SSSW_LongRange", SWKeyBindingDefOf.SSSW_LongRange))
+				if (DrawButton(calcGridRect(column++, 0), TextureResources.LongRange, new Color(0.8f, 0.8f, 0.4f), "SSSW_LongRange", SWKeyBindingDefOf.SSSW_LongRange))
 					interaction = SwitchButtonEnum.LongRange;
 			}
 			if (SwitchWeapons.ShowMediumRangeSwitch)
 			{
-				if (DrawButton(calcGridRect(2, 0), TextureResources.MediumRange, new Color(0.8f, 0.6f, 0.4f), "SSSW_MediumRange", SWKeyBindingDefOf.SSSW_MediumRange))
+				if (DrawButton(calcGridRect(column++, 0), TextureResources.MediumRange, new Color(0.8f, 0.6f, 0.4f), "SSSW_MediumRange", SWKeyBindingDefOf.SSSW_MediumRange))
 					interaction = SwitchButtonEnum.MediumRange;
 			}
 			if (SwitchWeapons.ShowShortRangeSwitch)
 			{
-				if (DrawButton(calcGridRect(3, 0), TextureResources.ShortRange, new Color(0.8f, 0.4f, 0.4f), "SSSW_ShortRange", SWKeyBindingDefOf.SSSW_ShortRange))
+				if (DrawButton(calcGridRect(column++, 0), TextureResources.ShortRange, new Color(0.8f, 0.4f, 0.4f), "SSSW_ShortRange", SWKeyBindingDefOf.SSSW_ShortRange))
 					interaction = SwitchButtonEnum.ShortRange;
 			}
 
@@ -116,12 +114,14 @@ namespace SwitchWeapons
 					interaction = SwitchButtonEnum.Dangerous;
 			}
 
-			if (DrawButton(calcGridRect(3, 1), TextureResources.Disable, new Color(0.8f, 0.8f, 0.8f), "SSSW_Disable", SWKeyBindingDefOf.SSSW_Disable))
+			var row = column > 2 || !SwitchWeapons.ShowDangerousSwitch && column > 1 ? 1 : 0;
+			column = row == 1 ? SwitchWeapons.ShowDangerousSwitch ? 3 : 2 : column;
+			if (DrawButton(calcGridRect(column, row), TextureResources.Disable, new Color(0.8f, 0.8f, 0.8f), "SSSW_Disable", SWKeyBindingDefOf.SSSW_Disable))
 				interaction = SwitchButtonEnum.Disable;
 
 			if (SwitchWeapons.ShowPrevNextSwitch)
 			{
-				var column = gridColumns;
+				column = gridColumns;
 				var nextPrevColor = new Color(0.8f, 0.8f, 0.8f);
 				if (DrawButton(calcGridRect(column, 0), TextureResources.Next, nextPrevColor, "SSSW_Next", SWKeyBindingDefOf.SSSW_Next))
 					interaction = SwitchButtonEnum.Next;

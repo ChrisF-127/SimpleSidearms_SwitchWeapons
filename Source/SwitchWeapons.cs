@@ -41,30 +41,30 @@ namespace SwitchWeapons
 				$"SSSW_{name}".Translate(),
 				$"SSSW_{name}Desc".Translate(),
 				true);
-			name = nameof(ShowMediumRangeSwitch);
-			ShowMediumRangeSwitch = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				true);
-			name = nameof(ShowShortRangeSwitch);
-			ShowShortRangeSwitch = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				true);
 			name = nameof(LongRangeTarget);
 			LongRangeTarget = Settings.GetHandle(
 				name,
 				$"SSSW_{name}".Translate(),
 				$"SSSW_{name}Desc".Translate(),
 				40f);
+			name = nameof(ShowMediumRangeSwitch);
+			ShowMediumRangeSwitch = Settings.GetHandle(
+				name,
+				$"SSSW_{name}".Translate(),
+				$"SSSW_{name}Desc".Translate(),
+				true);
 			name = nameof(MediumRangeTarget);
 			MediumRangeTarget = Settings.GetHandle(
 				name,
 				$"SSSW_{name}".Translate(),
 				$"SSSW_{name}Desc".Translate(),
 				25f);
+			name = nameof(ShowShortRangeSwitch);
+			ShowShortRangeSwitch = Settings.GetHandle(
+				name,
+				$"SSSW_{name}".Translate(),
+				$"SSSW_{name}Desc".Translate(),
+				true);
 			name = nameof(ShortRangeTarget);
 			ShortRangeTarget = Settings.GetHandle(
 				name,
