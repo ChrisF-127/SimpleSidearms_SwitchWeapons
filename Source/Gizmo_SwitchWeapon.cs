@@ -28,7 +28,9 @@ namespace SwitchWeapons
 			LongRange,
 			MediumRange,
 			ShortRange,
+
 			Dangerous,
+			EMP,
 
 			Next,
 			Previous,
@@ -91,7 +93,23 @@ namespace SwitchWeapons
 			if (DrawButton(calcGridRect(1, 1), TextureResources.ForceUnarmed, new Color(0.8f, 0.6f, 0.4f), "SSSW_Unarmed", SWKeyBindingDefOf.SSSW_Unarmed))
 				interaction = SwitchButtonEnum.Unarmed;
 
-			var column = 1;
+			int rangeCount = 0;
+			if (SwitchWeapons.ShowLongRangeSwitch)
+				rangeCount++;
+			if (SwitchWeapons.ShowMediumRangeSwitch)
+				rangeCount++;
+			if (SwitchWeapons.ShowShortRangeSwitch)
+				rangeCount++;
+			int deCount = 0;
+			if (SwitchWeapons.ShowDangerousSwitch)
+				deCount++;
+			if (SwitchWeapons.ShowEMPSwitch)
+				deCount++;
+
+			var defaultOnRow1 = rangeCount > 1 && deCount == 0;
+			var dangerOnRow0 = rangeCount == 0;
+
+			var column = defaultOnRow1 ? 1 : 2;
 			if (SwitchWeapons.ShowLongRangeSwitch)
 			{
 				if (DrawButton(calcGridRect(column++, 0), TextureResources.LongRange, new Color(0.8f, 0.8f, 0.4f), "SSSW_LongRange", SWKeyBindingDefOf.SSSW_LongRange))
@@ -108,14 +126,21 @@ namespace SwitchWeapons
 					interaction = SwitchButtonEnum.ShortRange;
 			}
 
+			var row = dangerOnRow0 ? 0 : 1;
 			if (SwitchWeapons.ShowDangerousSwitch)
 			{
-				if (DrawButton(calcGridRect(2, 1), TextureResources.Dangerous, new Color(0.8f, 0.4f, 0.4f), "SSSW_Dangerous", SWKeyBindingDefOf.SSSW_Dangerous))
+				if (DrawButton(calcGridRect(2, row), TextureResources.Dangerous, new Color(0.8f, 0.4f, 0.4f), "SSSW_Dangerous", SWKeyBindingDefOf.SSSW_Dangerous))
 					interaction = SwitchButtonEnum.Dangerous;
 			}
+			column = !dangerOnRow0 && deCount > 1 ? 3 : 2;
+			if (SwitchWeapons.ShowEMPSwitch)
+			{
+				if (DrawButton(calcGridRect(column, 1), TextureResources.EMP, new Color(0.4f, 0.8f, 0.8f), "SSSW_EMP", SWKeyBindingDefOf.SSSW_EMP))
+					interaction = SwitchButtonEnum.EMP;
+			}
 
-			var row = column > 2 || !SwitchWeapons.ShowDangerousSwitch && column > 1 ? 1 : 0;
-			column = row == 1 ? SwitchWeapons.ShowDangerousSwitch ? 3 : 2 : column;
+			column = defaultOnRow1 ? 2 : 1;
+			row = defaultOnRow1 ? 1 : 0;
 			if (DrawButton(calcGridRect(column, row), TextureResources.Disable, new Color(0.8f, 0.8f, 0.8f), "SSSW_Disable", SWKeyBindingDefOf.SSSW_Disable))
 				interaction = SwitchButtonEnum.Disable;
 
@@ -308,8 +333,7 @@ namespace SwitchWeapons
 						var weapons = new List<ThingWithComps>();
 						foreach (var weapon in carried)
 						{
-							if (GettersFilters.isDangerousWeapon(weapon)
-								|| GettersFilters.isEMPWeapon(weapon))
+							if (GettersFilters.isDangerousWeapon(weapon))
 								weapons.Add(weapon);
 						}
 
@@ -325,6 +349,34 @@ namespace SwitchWeapons
 							// Switch to weapon
 							if (!SwitchTo(pair))
 								Log.Warning("Simple Sidearms - Switch Weapons: [Dangerous] switching to dangerous failed");
+						}
+					}
+					break;
+				case SwitchButtonEnum.EMP:
+					{
+						// Find next EMP weapon
+						var (current, carried) = GetCurrentAndCarriedWeapons(_pawn);
+
+						// All weapons to list
+						var weapons = new List<ThingWithComps>();
+						foreach (var weapon in carried)
+						{
+							if (GettersFilters.isEMPWeapon(weapon))
+								weapons.Add(weapon);
+						}
+
+						// Find next or first
+						var found = GetPrevNextFromList(current, weapons, true, SwitchWeapons.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue);
+						if (found == current.toThingDefStuffDefPair())
+							found = weapons.FirstOrDefault()?.toThingDefStuffDefPair();
+						if (found is ThingDefStuffDefPair pair)
+						{
+							// Set weapon as forced so it sticks
+							memory.SetWeaponAsForced(pair, true);
+
+							// Switch to weapon
+							if (!SwitchTo(pair))
+								Log.Warning("Simple Sidearms - Switch Weapons: [EMP] switching to EMP failed");
 						}
 					}
 					break;
@@ -437,14 +489,17 @@ namespace SwitchWeapons
 
 			Func<ThingWithComps, bool> isValid;
 			// If skipping dangerous is disabled
-			if (!SwitchWeapons.PrevNextSkipDangerous)
+			if (!SwitchWeapons.PrevNextSkipDangerousAndEMP)
 				isValid = thing => true;
-			// ...otherwise if equipped weapon is non-dangerous only non-dangerous weapons are valid
-			else if (!GettersFilters.isDangerousWeapon(current))
-				isValid = thing => !GettersFilters.isDangerousWeapon(thing);
-			// ...otherwise only dangerous weapons are valid
-			else
+			// ...otherwise if equipped weapon is dangerous, only dangerous weapons are valid
+			else if (GettersFilters.isDangerousWeapon(current))
 				isValid = thing => GettersFilters.isDangerousWeapon(thing);
+			// ...otherwise if equipped weapon is emp, only emp weapons are valid
+			else if (GettersFilters.isEMPWeapon(current))
+				isValid = thing => GettersFilters.isEMPWeapon(thing);
+			// ...otherwise any non-dangerous/emp weapon is valid
+			else
+				isValid = thing => !GettersFilters.isDangerousWeapon(thing) && !GettersFilters.isEMPWeapon(thing);
 
 			var weapons = new List<ThingWithComps>();
 			// If equipped weapon is ranged, find all carried ranged weapons
@@ -530,9 +585,12 @@ namespace SwitchWeapons
 		private int SortByMarketValue(ThingWithComps a, ThingWithComps b)
 		{
 			var diff = (int)((b.MarketValue - a.MarketValue) * 1000);
-			if (diff != 0)
+			if (diff != 0) 
 				return diff;
 			diff = (int)((GetDPS(b) - GetDPS(a)) * 1000);
+			if (diff != 0)
+				return diff;
+			diff = string.Compare(b.def.defName, a.def.defName);
 			if (diff != 0) 
 				return diff;
 			return b.GetHashCode() - a.GetHashCode();
@@ -557,6 +615,9 @@ namespace SwitchWeapons
 				if (aRange != null)
 					return -1;
 			}
+			diff = string.Compare(b.def.defName, a.def.defName);
+			if (diff != 0) 
+				return diff;
 			return b.GetHashCode() - a.GetHashCode();
 		}
 
@@ -582,7 +643,7 @@ namespace SwitchWeapons
 				damagePerShot = projectile.GetDamageAmount(1);
 
 			var dps = damagePerShot * burstCount / (((burstCount - 1.0f) * 60.0f / roundsPerMinute) + cooldownInSeconds + warmupInSeconds);
-			Log.Message($"{thing} DPS  {damagePerShot} * {burstCount} / ((({burstCount} - 1.0) * 60.0 / {roundsPerMinute}) + {cooldownInSeconds} + {warmupInSeconds} = {dps}");
+			//Log.Message($"{thing} DPS  {damagePerShot} * {burstCount} / ((({burstCount} - 1.0) * 60.0 / {roundsPerMinute}) + {cooldownInSeconds} + {warmupInSeconds} = {dps}");
 			return dps;
 		}
 		private float GetRangeFactor(ThingWithComps thing, float range)
@@ -608,7 +669,7 @@ namespace SwitchWeapons
 			else
 				dpsFactorRange = accuracyLong;
 
-			Log.Message($"{thing} RFAC 3={accuracyTouch} 12={accuracyShort} 25={accuracyMedium} 40={accuracyLong} {range}={dpsFactorRange}");
+			//Log.Message($"{thing} RFAC 3={accuracyTouch} 12={accuracyShort} 25={accuracyMedium} 40={accuracyLong} {range}={dpsFactorRange}");
 			return dpsFactorRange;
 
 			float interpolate(float x0, float x1, float y0, float y1, float x) =>

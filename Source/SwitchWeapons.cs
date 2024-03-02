@@ -21,10 +21,11 @@ namespace SwitchWeapons
 		public static SettingHandle<float> ShortRangeTarget { get; private set; }
 
 		public static SettingHandle<bool> ShowDangerousSwitch { get; private set; }
+		public static SettingHandle<bool> ShowEMPSwitch { get; private set; }
 
 		public static SettingHandle<bool> ShowPrevNextSwitch { get; private set; }
 		public static SettingHandle<bool> PrevNextSortByRange { get; private set; }
-		public static SettingHandle<bool> PrevNextSkipDangerous { get; private set; }
+		public static SettingHandle<bool> PrevNextSkipDangerousAndEMP { get; private set; }
 
 		public override void DefsLoaded()
 		{
@@ -78,6 +79,12 @@ namespace SwitchWeapons
 				$"SSSW_{name}".Translate(),
 				$"SSSW_{name}Desc".Translate(),
 				true);
+			name = nameof(ShowEMPSwitch);
+			ShowEMPSwitch = Settings.GetHandle(
+				name,
+				$"SSSW_{name}".Translate(),
+				$"SSSW_{name}Desc".Translate(),
+				true);
 
 			name = nameof(ShowPrevNextSwitch);
 			ShowPrevNextSwitch = Settings.GetHandle(
@@ -91,8 +98,8 @@ namespace SwitchWeapons
 				$"SSSW_{name}".Translate(),
 				$"SSSW_{name}Desc".Translate(),
 				true);
-			name = nameof(PrevNextSkipDangerous);
-			PrevNextSkipDangerous = Settings.GetHandle(
+			name = nameof(PrevNextSkipDangerousAndEMP);
+			PrevNextSkipDangerousAndEMP = Settings.GetHandle(
 				name,
 				$"SSSW_{name}".Translate(),
 				$"SSSW_{name}Desc".Translate(),

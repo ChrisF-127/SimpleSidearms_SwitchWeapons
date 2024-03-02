@@ -35,9 +35,14 @@
     <defName>SSSW_ShortRange</defName>
     <label>switch to short range</label>
   </KeyBindingDef>
+  
   <KeyBindingDef ParentName="SSSWKeyBinding">
     <defName>SSSW_Dangerous</defName>
     <label>switch to dangerous weapons</label>
+  </KeyBindingDef>
+  <KeyBindingDef ParentName="SSSWKeyBinding">
+    <defName>SSSW_EMP</defName>
+    <label>switch to EMP weapons</label>
   </KeyBindingDef>
   
   <KeyBindingDef ParentName="SSSWKeyBinding">

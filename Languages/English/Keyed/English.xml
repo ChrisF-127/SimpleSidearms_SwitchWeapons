@@ -11,10 +11,12 @@
 	<SSSW_Unarmed>Unarmed: force unarmed fighting</SSSW_Unarmed>
 	<SSSW_Disable>Preferred: use preferred weapon</SSSW_Disable>
 	
-	<SSSW_LongRange>Long range: force using long range weapon</SSSW_LongRange>
-	<SSSW_MediumRange>Medium range: force using medium range weapon</SSSW_MediumRange>
-	<SSSW_ShortRange>Short range: force using short range weapon</SSSW_ShortRange>
-	<SSSW_Dangerous>Dangerous: force using dangerous/EMP weapon</SSSW_Dangerous>
+	<SSSW_LongRange>Long range: force using long range</SSSW_LongRange>
+	<SSSW_MediumRange>Medium range: force using medium range</SSSW_MediumRange>
+	<SSSW_ShortRange>Short range: force using short range</SSSW_ShortRange>
+	
+	<SSSW_Dangerous>Dangerous: force using explosives</SSSW_Dangerous>
+	<SSSW_EMP>EMP: force using EMP weapon</SSSW_EMP>
 	
 	<SSSW_Next>Next: switch to next weapon
 (if carrying multiple ranged or melee weapons)</SSSW_Next>
@@ -42,8 +44,11 @@
 	<SSSW_ShortRangeTarget>Short range distance</SSSW_ShortRangeTarget>
 	<SSSW_ShortRangeTargetDesc>Forcing "short range" usage will look for the weapon with the highest DPS at this range [default: 12]</SSSW_ShortRangeTargetDesc>
 	
-	<SSSW_ShowDangerousSwitch>Show dangerous/EMP button</SSSW_ShowDangerousSwitch>
-	<SSSW_ShowDangerousSwitchDesc>Enable button for forcing pawns to use dangerous weapons like grenades or rocket launchers</SSSW_ShowDangerousSwitchDesc>
+	<SSSW_ShowDangerousSwitch>Show dangerous button</SSSW_ShowDangerousSwitch>
+	<SSSW_ShowDangerousSwitchDesc>Enable button for forcing pawns to use dangerous weapons like grenades or rocket launchers (non-EMP)</SSSW_ShowDangerousSwitchDesc>
+	
+	<SSSW_ShowEMPSwitch>Show EMP button</SSSW_ShowEMPSwitch>
+	<SSSW_ShowEMPSwitchDesc>Enable button for forcing pawns to use EMP weapons</SSSW_ShowEMPSwitchDesc>
 	
 	<SSSW_ShowPrevNextSwitch>Show previous/next buttons</SSSW_ShowPrevNextSwitch>
 	<SSSW_ShowPrevNextSwitchDesc>Enable previous/next-buttons in UI which allow iterating through available weapons</SSSW_ShowPrevNextSwitchDesc>
@@ -51,7 +56,7 @@
 	<SSSW_PrevNextSortByRange>Sort previous/next by range</SSSW_PrevNextSortByRange>
 	<SSSW_PrevNextSortByRangeDesc>Sorts weapons by range (and max. DPS if range is equal) when iterating via previous/next-buttons otherwise sorting goes by market value (similar to Simple Sidearms gizmo)</SSSW_PrevNextSortByRangeDesc>
 	
-	<SSSW_PrevNextSkipDangerous>Previous/Next skips dangerous weapons</SSSW_PrevNextSkipDangerous>
-	<SSSW_PrevNextSkipDangerousDesc>Skips dangerous weapons when using previous/next-buttons if active (does not skip EMP weapons)</SSSW_PrevNextSkipDangerousDesc>
+	<SSSW_PrevNextSkipDangerousAndEMP>Previous/Next skips dangerous/EMP weapons</SSSW_PrevNextSkipDangerousAndEMP>
+	<SSSW_PrevNextSkipDangerousAndEMPDesc>Skips dangerous and EMP weapons when using previous/next-buttons if active</SSSW_PrevNextSkipDangerousAndEMPDesc>
 
 </LanguageData>

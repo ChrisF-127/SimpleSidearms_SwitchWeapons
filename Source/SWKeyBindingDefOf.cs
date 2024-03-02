@@ -20,7 +20,9 @@ namespace SwitchWeapons
 		public static KeyBindingDef SSSW_LongRange;
 		public static KeyBindingDef SSSW_MediumRange;
 		public static KeyBindingDef SSSW_ShortRange;
+
 		public static KeyBindingDef SSSW_Dangerous;
+		public static KeyBindingDef SSSW_EMP;
 
 		public static KeyBindingDef SSSW_Next;
 		public static KeyBindingDef SSSW_Previous;
