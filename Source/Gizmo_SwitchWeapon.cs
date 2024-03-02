@@ -337,11 +337,8 @@ namespace SwitchWeapons
 								weapons.Add(weapon);
 						}
 
-						// Find next or first
-						var found = GetPrevNextFromList(current, weapons, true, SwitchWeapons.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue);
-						if (found == current.toThingDefStuffDefPair())
-							found = weapons.FirstOrDefault()?.toThingDefStuffDefPair();
-						if (found is ThingDefStuffDefPair pair)
+						// Find next
+						if (GetPrevNextFromList(current, weapons, true, SwitchWeapons.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue) is ThingDefStuffDefPair pair)
 						{
 							// Set weapon as forced so it sticks
 							memory.SetWeaponAsForced(pair, true);
@@ -365,11 +362,8 @@ namespace SwitchWeapons
 								weapons.Add(weapon);
 						}
 
-						// Find next or first
-						var found = GetPrevNextFromList(current, weapons, true, SwitchWeapons.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue);
-						if (found == current.toThingDefStuffDefPair())
-							found = weapons.FirstOrDefault()?.toThingDefStuffDefPair();
-						if (found is ThingDefStuffDefPair pair)
+						// Find next
+						if (GetPrevNextFromList(current, weapons, true, SwitchWeapons.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue) is ThingDefStuffDefPair pair)
 						{
 							// Set weapon as forced so it sticks
 							memory.SetWeaponAsForced(pair, true);
@@ -563,18 +557,37 @@ namespace SwitchWeapons
 		private ThingWithComps GetBestDPSWeaponForRange(float range)
 		{
 			var bestWeapon = default(ThingWithComps);
-			var bestDPS = 0f;
-			foreach (var weapon in GetCurrentAndCarriedWeapons(_pawn).carried)
+			var bestValue = 0f;
+			var carried = GetCurrentAndCarriedWeapons(_pawn).carried;
+			// Try finding weapon with highest DPS at range
+			foreach (var weapon in carried)
 			{
-				if (weapon.def.IsRangedWeapon
+				if (weapon?.def?.IsRangedWeapon == true
 					&& !GettersFilters.isDangerousWeapon(weapon)
 					&& !GettersFilters.isEMPWeapon(weapon))
 				{
 					var dps = GetDPSAtRange(weapon, range);
-					if (dps > bestDPS)
+					if (dps > bestValue)
 					{
 						bestWeapon = weapon;
-						bestDPS = dps;
+						bestValue = dps;
+					}
+				}
+			}
+			// Find weapon with longest range possible if not weapon available with desired range
+			if (bestWeapon == null && SwitchWeapons.RangeUseHighestIfNotFound)
+			{
+				foreach (var weapon in carried)
+				{
+					if (weapon?.def?.IsRangedWeapon == true
+						&& !GettersFilters.isDangerousWeapon(weapon)
+						&& !GettersFilters.isEMPWeapon(weapon))
+					{
+						if (GetWeaponRange(weapon) is float rng && rng > bestValue)
+						{
+							bestWeapon = weapon;
+							bestValue = rng;
+						}
 					}
 				}
 			}
@@ -622,7 +635,7 @@ namespace SwitchWeapons
 		}
 
 		private float? GetWeaponRange(ThingWithComps weapon) =>
-			weapon.def.Verbs?.FirstOrDefault(v => v.Ranged)?.range;
+			weapon?.def?.Verbs?.FirstOrDefault(v => v.Ranged)?.range;
 
 		private float GetDPSAtRange(ThingWithComps thing, float range) =>
 			GetDPS(thing) * GetRangeFactor(thing, range);

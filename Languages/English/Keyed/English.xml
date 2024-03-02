@@ -44,6 +44,9 @@
 	<SSSW_ShortRangeTarget>Short range distance</SSSW_ShortRangeTarget>
 	<SSSW_ShortRangeTargetDesc>Forcing "short range" usage will look for the weapon with the highest DPS at this range [default: 12]</SSSW_ShortRangeTargetDesc>
 	
+	<SSSW_RangeUseHighestIfNotFound>Use highest range weapon available if no weapon can reach target range</SSSW_RangeUseHighestIfNotFound>
+	<SSSW_RangeUseHighestIfNotFoundDesc>If enabled, range buttons will switch to the highest range weapon available if no weapon can hit respective target range, otherwise the weapon will not be switched in this case</SSSW_RangeUseHighestIfNotFoundDesc>
+	
 	<SSSW_ShowDangerousSwitch>Show dangerous button</SSSW_ShowDangerousSwitch>
 	<SSSW_ShowDangerousSwitchDesc>Enable button for forcing pawns to use dangerous weapons like grenades or rocket launchers (non-EMP)</SSSW_ShowDangerousSwitchDesc>
 	

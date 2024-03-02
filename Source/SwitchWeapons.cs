@@ -14,11 +14,15 @@ namespace SwitchWeapons
 		public static SettingHandle<bool> ShowAfterDraftToggle { get; private set; }
 
 		public static SettingHandle<bool> ShowLongRangeSwitch { get; private set; }
-		public static SettingHandle<bool> ShowMediumRangeSwitch { get; private set; }
-		public static SettingHandle<bool> ShowShortRangeSwitch { get; private set; }
 		public static SettingHandle<float> LongRangeTarget { get; private set; }
+
+		public static SettingHandle<bool> ShowMediumRangeSwitch { get; private set; }
 		public static SettingHandle<float> MediumRangeTarget { get; private set; }
+
+		public static SettingHandle<bool> ShowShortRangeSwitch { get; private set; }
 		public static SettingHandle<float> ShortRangeTarget { get; private set; }
+
+		public static SettingHandle<bool> RangeUseHighestIfNotFound { get; private set; }
 
 		public static SettingHandle<bool> ShowDangerousSwitch { get; private set; }
 		public static SettingHandle<bool> ShowEMPSwitch { get; private set; }
@@ -48,6 +52,7 @@ namespace SwitchWeapons
 				$"SSSW_{name}".Translate(),
 				$"SSSW_{name}Desc".Translate(),
 				40f);
+
 			name = nameof(ShowMediumRangeSwitch);
 			ShowMediumRangeSwitch = Settings.GetHandle(
 				name,
@@ -60,6 +65,7 @@ namespace SwitchWeapons
 				$"SSSW_{name}".Translate(),
 				$"SSSW_{name}Desc".Translate(),
 				25f);
+
 			name = nameof(ShowShortRangeSwitch);
 			ShowShortRangeSwitch = Settings.GetHandle(
 				name,
@@ -72,6 +78,13 @@ namespace SwitchWeapons
 				$"SSSW_{name}".Translate(),
 				$"SSSW_{name}Desc".Translate(),
 				12f);
+
+			name = nameof(RangeUseHighestIfNotFound);
+			RangeUseHighestIfNotFound = Settings.GetHandle(
+				name,
+				$"SSSW_{name}".Translate(),
+				$"SSSW_{name}Desc".Translate(),
+				true);
 
 			name = nameof(ShowDangerousSwitch);
 			ShowDangerousSwitch = Settings.GetHandle(
