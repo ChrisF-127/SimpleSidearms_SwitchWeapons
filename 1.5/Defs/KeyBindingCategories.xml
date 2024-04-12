@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Defs>
+
+  <KeyBindingCategoryDef>
+    <defName>SSSW_Keys</defName>
+    <label>Simple Sidearms - Switch Weapons</label>
+    <description>Simple Sidearms - Switch Weapons hotkeys.</description>
+  </KeyBindingCategoryDef>
+
+</Defs>

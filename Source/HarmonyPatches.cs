@@ -73,7 +73,7 @@ namespace SwitchWeapons
 			{
 				return new Gizmo_SwitchWeapon(pawn)
 				{
-					disabled = pawn.Downed,
+					Disabled = pawn.Downed,
 					disabledReason = "SSSW_Downed".Translate(),
 				};
 			}
