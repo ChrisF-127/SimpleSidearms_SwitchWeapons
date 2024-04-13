@@ -68,7 +68,7 @@ namespace SwitchWeapons
 		{
 			if (pawn != null
 				&& pawn.Faction?.IsPlayer == true
-				&& pawn.Drafted
+				&& SwitchWeapons_Utility.IsSwitchable(pawn)
 				&& !pawn.WorkTagIsDisabled(WorkTags.Violent))
 			{
 				return new Gizmo_SwitchWeapon(pawn)
@@ -104,6 +104,16 @@ namespace SwitchWeapons
 				}
 			}
 			return instructions;
+		}
+	}
+
+	[HarmonyPatch(typeof(JobGiver_QuicklySwitchWeapons), "TryGiveJobStatic")]
+	static class JobGiver_QuicklySwitchWeapons_TryGiveJobStatic
+	{
+		public static bool Prefix(Pawn pawn)
+		{
+			// prevent weapon switching when in guard mode
+			return !SwitchWeapons_Utility.IsGuard(pawn);
 		}
 	}
 }

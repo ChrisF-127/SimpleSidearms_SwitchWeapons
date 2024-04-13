@@ -31,7 +31,7 @@ namespace SwitchWeapons
 			CompSwitchWeapon compSwitch = null;
 
 			// Must be drafted
-			if (pawn?.Drafted != true)
+			if (!SwitchWeapons_Utility.IsDrafted(pawn))
 				goto FALSE;
 
 			// Get SwitchWeapon comp
