@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 using Verse.Sound;
 using static PeteTimesSix.SimpleSidearms.Utilities.Enums;
 
@@ -206,16 +207,12 @@ namespace SwitchWeapons
 							memory.ForcedUnarmed = false;
 
 						// Switch to ranged
-						if (!SwitchToRanged(memory))
+						if (!_pawn.SwitchToRanged(memory))
 							Log.Warning("Simple Sidearms - Switch Weapons: [Ranged] switching to melee failed");
 
 						// Reenable out-of-combat forced weapon/unarmed
 						memory.ForcedWeapon = forcedWeapon;
 						memory.ForcedUnarmed = forcedUnarmed;
-
-						// Remember that we forced a switch to ranged
-						if (_pawn.TryGetComp<CompSwitchWeapon>() is CompSwitchWeapon switchWeapon)
-							switchWeapon.ForceSwitchedToRanged = true;
 					}
 					break;
 				case SwitchButtonEnum.Melee:
@@ -226,13 +223,8 @@ namespace SwitchWeapons
 							memory.ForcedWeapon = null;
 
 						// Switch to melee
-						if (!SwitchToMelee(memory))
+						if (!_pawn.SwitchToMelee(memory))
 							Log.Warning("Simple Sidearms - Switch Weapons: [Melee] switching to melee failed");
-
-						// Set the weapon as forced if it is a melee weapon
-						var weapon = _pawn.equipment.Primary;
-						if (weapon?.def?.IsMeleeWeapon == true)
-							memory.SetWeaponAsForced(weapon.toThingDefStuffDefPair(), true);
 
 						// Reenable out-of-combat forced weapon/unarmed
 						memory.ForcedWeapon = forcedWeapon;
@@ -244,21 +236,25 @@ namespace SwitchWeapons
 						// ranged
 						if (UseRanged(memory))
 						{
-							if (!SwitchToRanged(memory))
+							if (!_pawn.SwitchToRanged(memory))
 								Log.Warning("Simple Sidearms - Switch Weapons: [Disable] switching to ranged failed");
 						}
 						// melee
 						else if (!memory.PreferredUnarmed)
 						{
-							if (!SwitchToMelee(memory))
+							if (!_pawn.SwitchToMelee(memory))
 								Log.Warning("Simple Sidearms - Switch Weapons: [Disable] switching to melee failed");
 						}
 						// unarmed
 						else
 						{
-							if (!SwitchTo(null))
+							if (!_pawn.SwitchTo(null))
 								Log.Warning("Simple Sidearms - Switch Weapons: [Disable] switching to unarmed failed");
 						}
+
+						// Clear SelectedWeapon
+						if (_pawn.TryGetComp<CompSwitchWeapon>() is CompSwitchWeapon switchWeapon)
+							switchWeapon.SelectedWeapon = null;
 					}
 					break;
 				case SwitchButtonEnum.Unarmed:
@@ -267,7 +263,7 @@ namespace SwitchWeapons
 						memory.SetUnarmedAsForced(true);
 
 						// Switch to unarmed
-						if (!SwitchTo(null))
+						if (!_pawn.SwitchTo(null))
 							Log.Warning("Simple Sidearms - Switch Weapons: [Unarmed] switching to unarmed failed");
 					}
 					break;
@@ -280,11 +276,8 @@ namespace SwitchWeapons
 						{
 							var pair = bestWeapon.toThingDefStuffDefPair();
 
-							// Set weapon as forced so it sticks
-							memory.SetWeaponAsForced(pair, true);
-
 							// Switch to weapon
-							if (!SwitchTo(pair))
+							if (!_pawn.SwitchTo(pair))
 								Log.Warning("Simple Sidearms - Switch Weapons: [LongRange] switching to long range failed");
 						}
 					}
@@ -297,11 +290,8 @@ namespace SwitchWeapons
 						{
 							var pair = bestWeapon.toThingDefStuffDefPair();
 
-							// Set weapon as forced so it sticks
-							memory.SetWeaponAsForced(pair, true);
-
 							// Switch to weapon
-							if (!SwitchTo(pair))
+							if (!_pawn.SwitchTo(pair))
 								Log.Warning("Simple Sidearms - Switch Weapons: [MediumRange] switching to medium range failed");
 						}
 					}
@@ -314,11 +304,8 @@ namespace SwitchWeapons
 						{
 							var pair = bestWeapon.toThingDefStuffDefPair();
 
-							// Set weapon as forced so it sticks
-							memory.SetWeaponAsForced(pair, true);
-
 							// Switch to weapon
-							if (!SwitchTo(pair))
+							if (!_pawn.SwitchTo(pair))
 								Log.Warning("Simple Sidearms - Switch Weapons: [ShortRange] switching to short range failed");
 						}
 					}
@@ -340,11 +327,8 @@ namespace SwitchWeapons
 						// Find next
 						if (GetPrevNextFromList(current, weapons, true, SwitchWeapons.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue) is ThingDefStuffDefPair pair)
 						{
-							// Set weapon as forced so it sticks
-							memory.SetWeaponAsForced(pair, true);
-
 							// Switch to weapon
-							if (!SwitchTo(pair))
+							if (!_pawn.SwitchTo(pair))
 								Log.Warning("Simple Sidearms - Switch Weapons: [Dangerous] switching to dangerous failed");
 						}
 					}
@@ -365,11 +349,8 @@ namespace SwitchWeapons
 						// Find next
 						if (GetPrevNextFromList(current, weapons, true, SwitchWeapons.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue) is ThingDefStuffDefPair pair)
 						{
-							// Set weapon as forced so it sticks
-							memory.SetWeaponAsForced(pair, true);
-
 							// Switch to weapon
-							if (!SwitchTo(pair))
+							if (!_pawn.SwitchTo(pair))
 								Log.Warning("Simple Sidearms - Switch Weapons: [EMP] switching to EMP failed");
 						}
 					}
@@ -380,11 +361,8 @@ namespace SwitchWeapons
 						// Try find next weapon to switch to
 						if (GetPrevNext(_pawn, true) is ThingDefStuffDefPair pair)
 						{
-							// Set weapon as forced so it sticks
-							memory.SetWeaponAsForced(pair, true);
-
 							// Switch to weapon
-							if (!SwitchTo(pair))
+							if (!_pawn.SwitchTo(pair))
 								Log.Warning("Simple Sidearms - Switch Weapons: [Next] switching to next weapon failed");
 						}
 					}
@@ -394,11 +372,8 @@ namespace SwitchWeapons
 						// Try find previous weapon to switch to
 						if (GetPrevNext(_pawn, false) is ThingDefStuffDefPair pair)
 						{
-							// Set weapon as forced so it sticks
-							memory.SetWeaponAsForced(pair, true);
-
 							// Switch to weapon
-							if (!SwitchTo(pair))
+							if (!_pawn.SwitchTo(pair))
 								Log.Warning("Simple Sidearms - Switch Weapons: [Previous] switching to previous weapon failed");
 						}
 					}
@@ -419,47 +394,7 @@ namespace SwitchWeapons
 			memory.primaryWeaponMode == PrimaryWeaponMode.Ranged 
 			|| (memory.primaryWeaponMode == PrimaryWeaponMode.BySkill 
 				&& _pawn.getSkillWeaponPreference() == PrimaryWeaponMode.Ranged);
-
-		private bool SwitchToRanged(CompSidearmMemory memory)
-		{
-			// Switch to default weapon
-			if (memory.DefaultRangedWeapon is ThingDefStuffDefPair pair 
-				&& SwitchTo(pair))
-				return true;
-
-			// Switch to best ranged weapon
-			if (GettersFilters.findBestRangedWeapon(_pawn, null, true, PeteTimesSix.SimpleSidearms.SimpleSidearms.Settings.SkipDangerousWeapons, true).weapon is ThingWithComps thing
-				&& SwitchTo(thing))
-				return true;
-
-			// Switch failed
-			return false;
-		}
-		private bool SwitchToMelee(CompSidearmMemory memory)
-		{
-			// Switch to preferred melee weapon
-			if (memory.PreferredMeleeWeapon is ThingDefStuffDefPair pair
-				&& SwitchTo(pair))
-				return true;
-
-			// Switch to best melee weapon
-			if (GettersFilters.findBestMeleeWeapon(_pawn, out var thing, _pawn.equipment.Primary?.def.IsRangedWeapon != true, false)
-				&& SwitchTo(thing))
-				return true;
-
-			// Switch failed
-			return false;
-		}
-
-		private bool SwitchTo(ThingDefStuffDefPair pair) =>
-			_pawn.equipment.Primary?.toThingDefStuffDefPair() == pair 
-			|| WeaponAssingment.equipSpecificWeaponTypeFromInventory(_pawn, pair, IsFumbleDrop(), false);
-		private bool SwitchTo(ThingWithComps thing) => 
-			_pawn.equipment.Primary == thing 
-			|| WeaponAssingment.equipSpecificWeapon(_pawn, thing, IsFumbleDrop(), false);
-
-		private bool IsFumbleDrop() =>
-			MiscUtils.shouldDrop(_pawn, DroppingModeEnum.Combat, false);
+			
 
 		private (ThingWithComps current, List<ThingWithComps> carried) GetCurrentAndCarriedWeapons(Pawn pawn)
 		{

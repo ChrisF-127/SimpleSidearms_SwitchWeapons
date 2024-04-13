@@ -15,6 +15,7 @@ using UnityEngine;
 using Verse;
 using Verse.AI;
 using Verse.Sound;
+using static PeteTimesSix.SimpleSidearms.Utilities.Enums;
 
 namespace SwitchWeapons
 {
@@ -68,7 +69,7 @@ namespace SwitchWeapons
 		{
 			if (pawn != null
 				&& pawn.Faction?.IsPlayer == true
-				&& SwitchWeapons_Utility.IsSwitchable(pawn)
+				&& SwitchWeaponsUtility.IsSwitchable(pawn)
 				&& !pawn.WorkTagIsDisabled(WorkTags.Violent))
 			{
 				return new Gizmo_SwitchWeapon(pawn)
@@ -84,26 +85,29 @@ namespace SwitchWeapons
 	[HarmonyPatch(typeof(AutoUndrafter_AutoUndraftTick_Postfix), "AutoUndraftTick")]
 	static class AutoUndrafter_AutoUndraftTick_Postfix_AutoUndraftTick
 	{
-		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> codeInstructions)
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> codeInstructions, ILGenerator generator)
 		{
-			var instructions = codeInstructions.ToList();
-			for (int i = 0; i < instructions.Count; i++)
+			var patched = false;
+			var list = codeInstructions.ToList();
+			//Log.Message($"mmmmmmmmmm BEFORE\n{string.Join("\n", list)}");
+			for (int i = 0; i < list.Count; i++)
 			{
-				// ++ call static System.Boolean SwitchWeapons.CompSwitchWeapon::IsDraftedMeleeForcedRanged(Verse.Pawn pawn)
-				// ++ brtrue.s Label2
-				// ++ ldloc.0 NULL
-				//  0 callvirt virtual Verse.Map Verse.Thing::get_Map()
-				//  1 brfalse.s Label3
-				if (   instructions[i + 0].opcode == OpCodes.Callvirt && instructions[i].operand is MethodInfo mi && mi == AccessTools.PropertyGetter(typeof(Thing), nameof(Thing.Map))
-					&& instructions[i + 1].opcode == OpCodes.Brfalse_S)
+				if (list[i + 0].opcode == OpCodes.Callvirt && list[i].operand is MethodInfo mi && mi == AccessTools.PropertyGetter(typeof(Thing), nameof(Thing.Map))
+					&& list[i + 1].opcode == OpCodes.Brfalse_S)
 				{
-					var label = instructions[i + 1].operand;
-					instructions.Insert(i++, new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(CompSwitchWeapon), nameof(CompSwitchWeapon.IsDraftedMeleeForcedRanged))));
-					instructions.Insert(i++, new CodeInstruction(OpCodes.Brtrue_S, label));
-					instructions.Insert(i++, new CodeInstruction(OpCodes.Ldloc_0));
+					var label = list[i + 1].operand;
+					list.Insert(i++, new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SwitchWeaponsUtility), nameof(SwitchWeaponsUtility.PreventUndraftTickWeaponSwitch))));
+					list.Insert(i++, new CodeInstruction(OpCodes.Brtrue_S, label));
+					list.Insert(i++, new CodeInstruction(OpCodes.Ldloc_0));
+					
+					patched = true;
+					break;
 				}
 			}
-			return instructions;
+			//Log.Message($"mmmmmmmmmm AFTER\n{string.Join("\n", list)}");
+			if (!patched)
+				Log.Error($"{nameof(SwitchWeapons)}: {nameof(AutoUndrafter_AutoUndraftTick_Postfix_AutoUndraftTick)} patch failed");
+			return list;
 		}
 	}
 
@@ -112,8 +116,8 @@ namespace SwitchWeapons
 	{
 		public static bool Prefix(Pawn pawn)
 		{
-			// prevent weapon switching when in guard mode
-			return !SwitchWeapons_Utility.IsGuard(pawn);
+			// prevent switching to prefered when in guard mode
+			return !SwitchWeaponsUtility.IsGuard(pawn);
 		}
 	}
 }
