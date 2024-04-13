@@ -35,7 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="SimpleSidearms">
-      <HintPath>F:\Steam\SteamApps\workshop\content\294100\927155256\v1.4\Assemblies\SimpleSidearms.dll</HintPath>
+      <HintPath>F:\Steam\SteamApps\workshop\content\294100\927155256\v1.5\Assemblies\SimpleSidearms.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Core" />
