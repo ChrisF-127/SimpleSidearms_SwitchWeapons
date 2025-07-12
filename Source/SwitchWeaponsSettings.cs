@@ -172,5 +172,61 @@ namespace SwitchWeapons
 			}
 		}
 		#endregion
+
+		#region OVERRIDES
+		public override void ExposeData()
+		{
+			base.ExposeData();
+
+			bool boolValue;
+			float floatValue;
+
+			boolValue = ShowAfterDraftToggle;
+			Scribe_Values.Look(ref boolValue, nameof(ShowAfterDraftToggle), Default_ShowAfterDraftToggle);
+			ShowAfterDraftToggle = boolValue;
+			
+			boolValue = ShowLongRangeSwitch;
+			Scribe_Values.Look(ref boolValue, nameof(ShowLongRangeSwitch), Default_ShowLongRangeSwitch);
+			ShowLongRangeSwitch = boolValue;
+			floatValue = LongRangeTarget;
+			Scribe_Values.Look(ref floatValue, nameof(LongRangeTarget), Default_LongRangeTarget);
+			LongRangeTarget = floatValue;
+
+			boolValue = ShowMediumRangeSwitch;
+			Scribe_Values.Look(ref boolValue, nameof(ShowMediumRangeSwitch), Default_ShowMediumRangeSwitch);
+			ShowMediumRangeSwitch = boolValue;
+			floatValue = MediumRangeTarget;
+			Scribe_Values.Look(ref floatValue, nameof(MediumRangeTarget), Default_MediumRangeTarget);
+			MediumRangeTarget = floatValue;
+
+			boolValue = ShowShortRangeSwitch;
+			Scribe_Values.Look(ref boolValue, nameof(ShowShortRangeSwitch), Default_ShowShortRangeSwitch);
+			ShowShortRangeSwitch = boolValue;
+			floatValue = ShortRangeTarget;
+			Scribe_Values.Look(ref floatValue, nameof(ShortRangeTarget), Default_ShortRangeTarget);
+			ShortRangeTarget = floatValue;
+
+			boolValue = RangeUseHighestIfNotFound;
+			Scribe_Values.Look(ref boolValue, nameof(RangeUseHighestIfNotFound), Default_RangeUseHighestIfNotFound);
+			RangeUseHighestIfNotFound = boolValue;
+
+			boolValue = ShowDangerousSwitch;
+			Scribe_Values.Look(ref boolValue, nameof(ShowDangerousSwitch), Default_ShowDangerousSwitch);
+			ShowDangerousSwitch = boolValue;
+			boolValue = ShowEMPSwitch;
+			Scribe_Values.Look(ref boolValue, nameof(ShowEMPSwitch), Default_ShowEMPSwitch);
+			ShowEMPSwitch = boolValue;
+
+			boolValue = ShowPrevNextSwitch;
+			Scribe_Values.Look(ref boolValue, nameof(ShowPrevNextSwitch), Default_ShowPrevNextSwitch);
+			ShowPrevNextSwitch = boolValue;
+			boolValue = PrevNextSortByRange;
+			Scribe_Values.Look(ref boolValue, nameof(PrevNextSortByRange), Default_PrevNextSortByRange);
+			PrevNextSortByRange = boolValue;
+			boolValue = PrevNextSkipDangerousAndEMP;
+			Scribe_Values.Look(ref boolValue, nameof(PrevNextSkipDangerousAndEMP), Default_PrevNextSkipDangerousAndEMP);
+			PrevNextSkipDangerousAndEMP = boolValue;
+		}
+		#endregion
 	}
 }
