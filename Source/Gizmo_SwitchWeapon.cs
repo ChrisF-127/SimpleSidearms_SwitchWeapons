@@ -94,46 +94,46 @@ namespace SwitchWeapons
 				interaction = SwitchButtonEnum.Unarmed;
 
 			int rangeCount = 0;
-			if (SwitchWeapons.ShowLongRangeSwitch)
+			if (SwitchWeapons.Settings.ShowLongRangeSwitch)
 				rangeCount++;
-			if (SwitchWeapons.ShowMediumRangeSwitch)
+			if (SwitchWeapons.Settings.ShowMediumRangeSwitch)
 				rangeCount++;
-			if (SwitchWeapons.ShowShortRangeSwitch)
+			if (SwitchWeapons.Settings.ShowShortRangeSwitch)
 				rangeCount++;
 			int deCount = 0;
-			if (SwitchWeapons.ShowDangerousSwitch)
+			if (SwitchWeapons.Settings.ShowDangerousSwitch)
 				deCount++;
-			if (SwitchWeapons.ShowEMPSwitch)
+			if (SwitchWeapons.Settings.ShowEMPSwitch)
 				deCount++;
 
 			var defaultOnRow1 = rangeCount > 1 && deCount == 0;
 			var dangerOnRow0 = rangeCount == 0;
 
 			var column = defaultOnRow1 ? 1 : 2;
-			if (SwitchWeapons.ShowLongRangeSwitch)
+			if (SwitchWeapons.Settings.ShowLongRangeSwitch)
 			{
 				if (DrawButton(calcGridRect(column++, 0), TextureResources.LongRange, new Color(0.8f, 0.8f, 0.4f), "SSSW_LongRange", SWKeyBindingDefOf.SSSW_LongRange))
 					interaction = SwitchButtonEnum.LongRange;
 			}
-			if (SwitchWeapons.ShowMediumRangeSwitch)
+			if (SwitchWeapons.Settings.ShowMediumRangeSwitch)
 			{
 				if (DrawButton(calcGridRect(column++, 0), TextureResources.MediumRange, new Color(0.8f, 0.6f, 0.4f), "SSSW_MediumRange", SWKeyBindingDefOf.SSSW_MediumRange))
 					interaction = SwitchButtonEnum.MediumRange;
 			}
-			if (SwitchWeapons.ShowShortRangeSwitch)
+			if (SwitchWeapons.Settings.ShowShortRangeSwitch)
 			{
 				if (DrawButton(calcGridRect(column++, 0), TextureResources.ShortRange, new Color(0.8f, 0.4f, 0.4f), "SSSW_ShortRange", SWKeyBindingDefOf.SSSW_ShortRange))
 					interaction = SwitchButtonEnum.ShortRange;
 			}
 
 			var row = dangerOnRow0 ? 0 : 1;
-			if (SwitchWeapons.ShowDangerousSwitch)
+			if (SwitchWeapons.Settings.ShowDangerousSwitch)
 			{
 				if (DrawButton(calcGridRect(2, row), TextureResources.Dangerous, new Color(0.8f, 0.4f, 0.4f), "SSSW_Dangerous", SWKeyBindingDefOf.SSSW_Dangerous))
 					interaction = SwitchButtonEnum.Dangerous;
 			}
 			column = !dangerOnRow0 && deCount > 1 ? 3 : 2;
-			if (SwitchWeapons.ShowEMPSwitch)
+			if (SwitchWeapons.Settings.ShowEMPSwitch)
 			{
 				if (DrawButton(calcGridRect(column, 1), TextureResources.EMP, new Color(0.4f, 0.8f, 0.8f), "SSSW_EMP", SWKeyBindingDefOf.SSSW_EMP))
 					interaction = SwitchButtonEnum.EMP;
@@ -144,7 +144,7 @@ namespace SwitchWeapons
 			if (DrawButton(calcGridRect(column, row), TextureResources.Disable, new Color(0.8f, 0.8f, 0.8f), "SSSW_Disable", SWKeyBindingDefOf.SSSW_Disable))
 				interaction = SwitchButtonEnum.Disable;
 
-			if (SwitchWeapons.ShowPrevNextSwitch)
+			if (SwitchWeapons.Settings.ShowPrevNextSwitch)
 			{
 				column = gridColumns;
 				var nextPrevColor = new Color(0.8f, 0.8f, 0.8f);
@@ -275,7 +275,7 @@ namespace SwitchWeapons
 				case SwitchButtonEnum.LongRange:
 					{
 						// Find highest DPS weapon for range
-						var bestWeapon = GetBestDPSWeaponForRange(SwitchWeapons.LongRangeTarget.Value);
+						var bestWeapon = GetBestDPSWeaponForRange(SwitchWeapons.Settings.LongRangeTarget);
 						if (bestWeapon != null)
 						{
 							var pair = bestWeapon.toThingDefStuffDefPair();
@@ -292,7 +292,7 @@ namespace SwitchWeapons
 				case SwitchButtonEnum.MediumRange:
 					{
 						// Find highest DPS weapon for range
-						var bestWeapon = GetBestDPSWeaponForRange(SwitchWeapons.MediumRangeTarget.Value);
+						var bestWeapon = GetBestDPSWeaponForRange(SwitchWeapons.Settings.MediumRangeTarget);
 						if (bestWeapon != null)
 						{
 							var pair = bestWeapon.toThingDefStuffDefPair();
@@ -309,7 +309,7 @@ namespace SwitchWeapons
 				case SwitchButtonEnum.ShortRange:
 					{
 						// Find highest DPS weapon for range
-						var bestWeapon = GetBestDPSWeaponForRange(SwitchWeapons.ShortRangeTarget.Value);
+						var bestWeapon = GetBestDPSWeaponForRange(SwitchWeapons.Settings.ShortRangeTarget);
 						if (bestWeapon != null)
 						{
 							var pair = bestWeapon.toThingDefStuffDefPair();
@@ -338,7 +338,7 @@ namespace SwitchWeapons
 						}
 
 						// Find next
-						if (GetPrevNextFromList(current, weapons, true, SwitchWeapons.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue) is ThingDefStuffDefPair pair)
+						if (GetPrevNextFromList(current, weapons, true, SwitchWeapons.Settings.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue) is ThingDefStuffDefPair pair)
 						{
 							// Set weapon as forced so it sticks
 							memory.SetWeaponAsForced(pair, true);
@@ -363,7 +363,7 @@ namespace SwitchWeapons
 						}
 
 						// Find next
-						if (GetPrevNextFromList(current, weapons, true, SwitchWeapons.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue) is ThingDefStuffDefPair pair)
+						if (GetPrevNextFromList(current, weapons, true, SwitchWeapons.Settings.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue) is ThingDefStuffDefPair pair)
 						{
 							// Set weapon as forced so it sticks
 							memory.SetWeaponAsForced(pair, true);
@@ -483,7 +483,7 @@ namespace SwitchWeapons
 
 			Func<ThingWithComps, bool> isValid;
 			// If skipping dangerous is disabled
-			if (!SwitchWeapons.PrevNextSkipDangerousAndEMP)
+			if (!SwitchWeapons.Settings.PrevNextSkipDangerousAndEMP)
 				isValid = thing => true;
 			// ...otherwise if equipped weapon is dangerous, only dangerous weapons are valid
 			else if (GettersFilters.isDangerousWeapon(current))
@@ -512,7 +512,7 @@ namespace SwitchWeapons
 			}
 
 			// Get from list
-			var sortBy = SwitchWeapons.PrevNextSortByRange && current.def.IsRangedWeapon ? SortByEnum.Range : SortByEnum.MarketValue;
+			var sortBy = SwitchWeapons.Settings.PrevNextSortByRange && current.def.IsRangedWeapon ? SortByEnum.Range : SortByEnum.MarketValue;
 			return GetPrevNextFromList(current, weapons, getNext, sortBy);
 		}
 		private ThingDefStuffDefPair? GetPrevNextFromList(ThingWithComps current, List<ThingWithComps> weapons, bool getNext, SortByEnum sortBy)
@@ -575,7 +575,7 @@ namespace SwitchWeapons
 				}
 			}
 			// Find weapon with longest range possible if not weapon available with desired range
-			if (bestWeapon == null && SwitchWeapons.RangeUseHighestIfNotFound)
+			if (bestWeapon == null && SwitchWeapons.Settings.RangeUseHighestIfNotFound)
 			{
 				foreach (var weapon in carried)
 				{
@@ -653,7 +653,7 @@ namespace SwitchWeapons
 			float damagePerShot = 0f;
 			var projectile = verbProps.defaultProjectile?.projectile;
 			if (projectile != null)
-				damagePerShot = projectile.GetDamageAmount(1);
+				damagePerShot = projectile.GetDamageAmount(thing);
 
 			var dps = damagePerShot * burstCount / (((burstCount - 1.0f) * 60.0f / roundsPerMinute) + cooldownInSeconds + warmupInSeconds);
 			//Log.Message($"{thing} DPS  {damagePerShot} * {burstCount} / ((({burstCount} - 1.0) * 60.0 / {roundsPerMinute}) + {cooldownInSeconds} + {warmupInSeconds} = {dps}");

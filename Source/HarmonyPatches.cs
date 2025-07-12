@@ -33,7 +33,7 @@ namespace SwitchWeapons
 					yield return gizmo;
 			}
 			// show gizmo after SimpleSidearms (hopefully)
-			else if (!SwitchWeapons.ShowAfterDraftToggle)
+			else if (!SwitchWeapons.Settings.ShowAfterDraftToggle)
 			{
 				yield return switchWeaponGizmo;
 
@@ -81,8 +81,8 @@ namespace SwitchWeapons
 		}
 	}
 
-	[HarmonyPatch(typeof(AutoUndrafter_AutoUndraftTick_Postfix), "AutoUndraftTick")]
-	static class AutoUndrafter_AutoUndraftTick_Postfix_AutoUndraftTick
+	[HarmonyPatch(typeof(AutoUndrafter_AutoUndraftTick_Postfix), "AutoUndraftTickInterval")]
+	static class AutoUndrafter_AutoUndraftTick_Postfix_AutoUndraftTickInterval
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> codeInstructions)
 		{

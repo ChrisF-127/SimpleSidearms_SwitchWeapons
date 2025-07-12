@@ -1,122 +1,54 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HugsLib;
-using HugsLib.Settings;
+using UnityEngine;
 using Verse;
 
 namespace SwitchWeapons
 {
-	public class SwitchWeapons : ModBase
+	public class SwitchWeapons : Mod
 	{
-		public static SettingHandle<bool> ShowAfterDraftToggle { get; private set; }
+		#region PROPERTIES
+		public static SwitchWeapons Instance { get; private set; }
+		public static SwitchWeaponsSettings Settings { get; private set; }
+		#endregion
 
-		public static SettingHandle<bool> ShowLongRangeSwitch { get; private set; }
-		public static SettingHandle<float> LongRangeTarget { get; private set; }
-
-		public static SettingHandle<bool> ShowMediumRangeSwitch { get; private set; }
-		public static SettingHandle<float> MediumRangeTarget { get; private set; }
-
-		public static SettingHandle<bool> ShowShortRangeSwitch { get; private set; }
-		public static SettingHandle<float> ShortRangeTarget { get; private set; }
-
-		public static SettingHandle<bool> RangeUseHighestIfNotFound { get; private set; }
-
-		public static SettingHandle<bool> ShowDangerousSwitch { get; private set; }
-		public static SettingHandle<bool> ShowEMPSwitch { get; private set; }
-
-		public static SettingHandle<bool> ShowPrevNextSwitch { get; private set; }
-		public static SettingHandle<bool> PrevNextSortByRange { get; private set; }
-		public static SettingHandle<bool> PrevNextSkipDangerousAndEMP { get; private set; }
-
-		public override void DefsLoaded()
+		#region CONSTRUCTORS
+		static SwitchWeapons()
 		{
-			var name = nameof(ShowAfterDraftToggle);
-			ShowAfterDraftToggle = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				true);
-
-			name = nameof(ShowLongRangeSwitch);
-			ShowLongRangeSwitch = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				true);
-			name = nameof(LongRangeTarget);
-			LongRangeTarget = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				40f);
-
-			name = nameof(ShowMediumRangeSwitch);
-			ShowMediumRangeSwitch = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				true);
-			name = nameof(MediumRangeTarget);
-			MediumRangeTarget = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				25f);
-
-			name = nameof(ShowShortRangeSwitch);
-			ShowShortRangeSwitch = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				true);
-			name = nameof(ShortRangeTarget);
-			ShortRangeTarget = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				12f);
-
-			name = nameof(RangeUseHighestIfNotFound);
-			RangeUseHighestIfNotFound = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				true);
-
-			name = nameof(ShowDangerousSwitch);
-			ShowDangerousSwitch = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				true);
-			name = nameof(ShowEMPSwitch);
-			ShowEMPSwitch = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				true);
-
-			name = nameof(ShowPrevNextSwitch);
-			ShowPrevNextSwitch = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				true);
-			name = nameof(PrevNextSortByRange);
-			PrevNextSortByRange = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				true);
-			name = nameof(PrevNextSkipDangerousAndEMP);
-			PrevNextSkipDangerousAndEMP = Settings.GetHandle(
-				name,
-				$"SSSW_{name}".Translate(),
-				$"SSSW_{name}Desc".Translate(),
-				true);
+			var harmony = new Harmony("syrus.simplesidearmsswitchweapons");
+			harmony.PatchAll();
 		}
+
+		public SwitchWeapons(ModContentPack content) : 
+			base(content)
+		{
+			Instance = this;
+
+			LongEventHandler.ExecuteWhenFinished(Initialize);
+		}
+		#endregion
+
+		#region OVERRIDES
+		public override string SettingsCategory() =>
+			"Simple Sidearms - Switch Weapons";
+
+		public override void DoSettingsWindowContents(Rect inRect)
+		{
+			base.DoSettingsWindowContents(inRect);
+
+			Settings.DoSettingsWindowContents(inRect);
+		}
+		#endregion
+
+		#region PRIVATE METHODS
+		private void Initialize()
+		{
+			Settings = GetSettings<SwitchWeaponsSettings>();
+		}
+		#endregion
 	}
 }
