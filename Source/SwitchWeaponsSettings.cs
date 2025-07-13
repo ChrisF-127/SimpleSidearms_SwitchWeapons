@@ -168,7 +168,7 @@ namespace SwitchWeapons
 			}
 			finally
 			{
-				ControlsBuilder.End();
+				ControlsBuilder.End(offsetY);
 			}
 		}
 		#endregion
