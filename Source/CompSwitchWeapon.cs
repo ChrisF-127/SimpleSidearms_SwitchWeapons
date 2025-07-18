@@ -15,12 +15,6 @@ namespace SwitchWeapons
 	{
 		public bool ForceSwitchedToRanged = false;
 
-		public override void PostSpawnSetup(bool respawningAfterLoad)
-		{
-			if (parent is Pawn pawn && pawn.RaceProps?.Humanlike != true)
-				pawn.AllComps.Remove(this);
-		}
-
 		public override void PostExposeData()
 		{
 			Scribe_Values.Look(ref ForceSwitchedToRanged, nameof(ForceSwitchedToRanged));
