@@ -28,24 +28,31 @@
 	
 	<SSSW_ShowLongRangeSwitch>Show long range button</SSSW_ShowLongRangeSwitch>
 	<SSSW_ShowLongRangeSwitchDesc>Enable button for forcing pawns to use weapons with best DPS at long range</SSSW_ShowLongRangeSwitchDesc>
+	<SSSW_ShowLongestRangeSwitchDesc>Enable button for forcing pawns to use longest range weapons</SSSW_ShowLongestRangeSwitchDesc>
 	
 	<SSSW_LongRangeTarget>Long range distance</SSSW_LongRangeTarget>
 	<SSSW_LongRangeTargetDesc>Forcing "long range" usage will look for the weapon with the highest DPS at this range [default: 40]</SSSW_LongRangeTargetDesc>
 	
 	<SSSW_ShowMediumRangeSwitch>Show medium range button</SSSW_ShowMediumRangeSwitch>
 	<SSSW_ShowMediumRangeSwitchDesc>Enable button for forcing pawns to use weapons with best DPS at medium range</SSSW_ShowMediumRangeSwitchDesc>
+	<SSSW_ShowMediumestRangeSwitchDesc>Enable button for forcing pawns to use a weapon that meets the "medium range distance" requirement</SSSW_ShowMediumestRangeSwitchDesc>
 	
 	<SSSW_MediumRangeTarget>Medium range distance</SSSW_MediumRangeTarget>
 	<SSSW_MediumRangeTargetDesc>Forcing "medium range" usage will look for the weapon with the highest DPS at this range [default: 25]</SSSW_MediumRangeTargetDesc>
+	<SSSW_MediumestRangeTargetDesc>Forcing "medium range" usage will switch to a weapon of this range (or as close to it as possible) [default: 25]</SSSW_MediumestRangeTargetDesc>
 	
 	<SSSW_ShowShortRangeSwitch>Show short range button</SSSW_ShowShortRangeSwitch>
 	<SSSW_ShowShortRangeSwitchDesc>Enable button for forcing pawns to use weapons with best DPS at short range</SSSW_ShowShortRangeSwitchDesc>
+	<SSSW_ShowShortestRangeSwitchDesc>Enable button for forcing pawns to use shortest range weapons</SSSW_ShowShortestRangeSwitchDesc>
 	
 	<SSSW_ShortRangeTarget>Short range distance</SSSW_ShortRangeTarget>
 	<SSSW_ShortRangeTargetDesc>Forcing "short range" usage will look for the weapon with the highest DPS at this range [default: 12]</SSSW_ShortRangeTargetDesc>
 	
-	<SSSW_RangeUseHighestIfNotFound>Use highest range weapon available if no weapon can reach target range</SSSW_RangeUseHighestIfNotFound>
-	<SSSW_RangeUseHighestIfNotFoundDesc>If enabled, range buttons will switch to the highest range weapon available if no weapon can hit respective target range, otherwise the weapon will not be switched in this case</SSSW_RangeUseHighestIfNotFoundDesc>
+	<SSSW_RangeUseLongestShortest>Equip longest/shortest range weapon, disregarding weapon DPS</SSSW_RangeUseLongestShortest>
+	<SSSW_RangeUseLongestShortestDesc>When enabled, long/short range button will switch to longest/shortest range weapon available and medium switches to a weapon that meets the "medium range distance" requirement</SSSW_RangeUseLongestShortestDesc>
+	
+	<SSSW_RangeUseHighestIfNotFound>Equip highest range weapon available if no weapon can reach target range</SSSW_RangeUseHighestIfNotFound>
+	<SSSW_RangeUseHighestIfNotFoundDesc>When enabled, range buttons will switch to the highest range weapon available if no weapon can hit respective target range, otherwise the weapon will not be switched in this case</SSSW_RangeUseHighestIfNotFoundDesc>
 	
 	<SSSW_ShowDangerousSwitch>Show dangerous button</SSSW_ShowDangerousSwitch>
 	<SSSW_ShowDangerousSwitchDesc>Enable button for forcing pawns to use dangerous weapons like grenades or rocket launchers (non-EMP)</SSSW_ShowDangerousSwitchDesc>

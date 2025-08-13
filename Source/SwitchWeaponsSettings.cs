@@ -24,6 +24,7 @@ namespace SwitchWeapons
 		public const bool Default_ShowShortRangeSwitch = true;
 		public const float Default_ShortRangeTarget = 12f;
 
+		public const bool Default_RangeUseLongestShortest = false;
 		public const bool Default_RangeUseHighestIfNotFound = true;
 
 		public const bool Default_ShowDangerousSwitch = true;
@@ -46,6 +47,7 @@ namespace SwitchWeapons
 		public bool ShowShortRangeSwitch { get; set; } = Default_ShowShortRangeSwitch;
 		public float ShortRangeTarget { get; set; } = Default_ShortRangeTarget;
 
+		public bool RangeUseLongestShortest { get; set; } = Default_RangeUseLongestShortest;
 		public bool RangeUseHighestIfNotFound { get; set; } = Default_RangeUseHighestIfNotFound;
 
 		public bool ShowDangerousSwitch { get; set; } = Default_ShowDangerousSwitch;
@@ -65,6 +67,9 @@ namespace SwitchWeapons
 			ControlsBuilder.Begin(inRect);
 			try
 			{
+				// Longest/Mediumest/Shortest text addition when using longest/shortest
+				var rangeDesc = RangeUseLongestShortest ? "est" : "";
+
 				ShowAfterDraftToggle = ControlsBuilder.CreateCheckbox(
 					ref offsetY,
 					width,
@@ -77,57 +82,85 @@ namespace SwitchWeapons
 					ref offsetY,
 					width,
 					"SSSW_ShowLongRangeSwitch".Translate(),
-					"SSSW_ShowLongRangeSwitchDesc".Translate(),
+					("SSSW_ShowLong" + rangeDesc + "RangeSwitchDesc").Translate(),
 					ShowLongRangeSwitch,
 					Default_ShowLongRangeSwitch);
-				LongRangeTarget = ControlsBuilder.CreateNumeric(
-					ref offsetY,
-					width,
-					"SSSW_LongRangeTarget".Translate(),
-					"SSSW_LongRangeTargetDesc".Translate(),
-					LongRangeTarget,
-					Default_LongRangeTarget,
-					nameof(LongRangeTarget));
+				// only show if active and not using longest/shortest
+				if (ShowLongRangeSwitch && !RangeUseLongestShortest)
+				{
+					LongRangeTarget = ControlsBuilder.CreateNumeric(
+						ref offsetY,
+						width,
+						"SSSW_LongRangeTarget".Translate(),
+						"SSSW_LongRangeTargetDesc".Translate(),
+						LongRangeTarget,
+						Default_LongRangeTarget,
+						nameof(LongRangeTarget));
+				}
 
 				ShowMediumRangeSwitch = ControlsBuilder.CreateCheckbox(
 					ref offsetY,
 					width,
 					"SSSW_ShowMediumRangeSwitch".Translate(),
-					"SSSW_ShowMediumRangeSwitchDesc".Translate(),
+					("SSSW_ShowMedium" + rangeDesc + "RangeSwitchDesc").Translate(),
 					ShowMediumRangeSwitch,
 					Default_ShowMediumRangeSwitch);
-				MediumRangeTarget = ControlsBuilder.CreateNumeric(
-					ref offsetY,
-					width,
-					"SSSW_MediumRangeTarget".Translate(),
-					"SSSW_MediumRangeTargetDesc".Translate(),
-					MediumRangeTarget,
-					Default_MediumRangeTarget,
-					nameof(MediumRangeTarget));
+				// only show if active
+				if (ShowMediumRangeSwitch)
+				{
+					MediumRangeTarget = ControlsBuilder.CreateNumeric(
+						ref offsetY,
+						width,
+						"SSSW_MediumRangeTarget".Translate(),
+						("SSSW_Medium" + rangeDesc + "RangeTargetDesc").Translate(),
+						MediumRangeTarget,
+						Default_MediumRangeTarget,
+						nameof(MediumRangeTarget));
+				}
 
 				ShowShortRangeSwitch = ControlsBuilder.CreateCheckbox(
 					ref offsetY,
 					width,
 					"SSSW_ShowShortRangeSwitch".Translate(),
-					"SSSW_ShowShortRangeSwitchDesc".Translate(),
+					("SSSW_ShowShort" + rangeDesc + "RangeSwitchDesc").Translate(),
 					ShowShortRangeSwitch,
 					Default_ShowShortRangeSwitch);
-				ShortRangeTarget = ControlsBuilder.CreateNumeric(
-					ref offsetY,
-					width,
-					"SSSW_ShortRangeTarget".Translate(),
-					"SSSW_ShortRangeTargetDesc".Translate(),
-					ShortRangeTarget,
-					Default_ShortRangeTarget,
-					nameof(ShortRangeTarget));
+				// only show if active and not using longest/shortest
+				if (ShowShortRangeSwitch && !RangeUseLongestShortest)
+				{
+					ShortRangeTarget = ControlsBuilder.CreateNumeric(
+						ref offsetY,
+						width,
+						"SSSW_ShortRangeTarget".Translate(),
+						"SSSW_ShortRangeTargetDesc".Translate(),
+						ShortRangeTarget,
+						Default_ShortRangeTarget,
+						nameof(ShortRangeTarget));
+				}
 
-				RangeUseHighestIfNotFound = ControlsBuilder.CreateCheckbox(
-					ref offsetY,
-					width,
-					"SSSW_RangeUseHighestIfNotFound".Translate(),
-					"SSSW_RangeUseHighestIfNotFoundDesc".Translate(),
-					RangeUseHighestIfNotFound,
-					Default_RangeUseHighestIfNotFound);
+				// only show if any range button is shown
+				if (ShowLongRangeSwitch || ShowMediumRangeSwitch || ShowShortRangeSwitch)
+				{
+					RangeUseLongestShortest = ControlsBuilder.CreateCheckbox(
+						ref offsetY,
+						width,
+						"SSSW_RangeUseLongestShortest".Translate(),
+						"SSSW_RangeUseLongestShortestDesc".Translate(),
+						RangeUseLongestShortest,
+						Default_RangeUseLongestShortest);
+
+					// not applicable when using longest/shortest
+					if (!RangeUseLongestShortest)
+					{
+						RangeUseHighestIfNotFound = ControlsBuilder.CreateCheckbox(
+							ref offsetY,
+							width,
+							"SSSW_RangeUseHighestIfNotFound".Translate(),
+							"SSSW_RangeUseHighestIfNotFoundDesc".Translate(),
+							RangeUseHighestIfNotFound,
+							Default_RangeUseHighestIfNotFound);
+					}
+				}
 
 				ShowDangerousSwitch = ControlsBuilder.CreateCheckbox(
 					ref offsetY,
@@ -206,6 +239,9 @@ namespace SwitchWeapons
 			Scribe_Values.Look(ref floatValue, nameof(ShortRangeTarget), Default_ShortRangeTarget);
 			ShortRangeTarget = floatValue;
 
+			boolValue = RangeUseLongestShortest;
+			Scribe_Values.Look(ref boolValue, nameof(RangeUseLongestShortest), Default_RangeUseLongestShortest);
+			RangeUseLongestShortest = boolValue;
 			boolValue = RangeUseHighestIfNotFound;
 			Scribe_Values.Look(ref boolValue, nameof(RangeUseHighestIfNotFound), Default_RangeUseHighestIfNotFound);
 			RangeUseHighestIfNotFound = boolValue;

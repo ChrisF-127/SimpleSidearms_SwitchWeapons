@@ -275,7 +275,9 @@ namespace SwitchWeapons
 				case SwitchButtonEnum.LongRange:
 					{
 						// Find highest DPS weapon for range
-						var bestWeapon = GetBestDPSWeaponForRange(SwitchWeapons.Settings.LongRangeTarget);
+						var bestWeapon = SwitchWeapons.Settings.RangeUseLongestShortest ?
+							GetLongestRangeWeapon() :
+							GetBestDPSWeaponForRange(SwitchWeapons.Settings.LongRangeTarget);
 						if (bestWeapon != null)
 						{
 							var pair = bestWeapon.toThingDefStuffDefPair();
@@ -292,7 +294,9 @@ namespace SwitchWeapons
 				case SwitchButtonEnum.MediumRange:
 					{
 						// Find highest DPS weapon for range
-						var bestWeapon = GetBestDPSWeaponForRange(SwitchWeapons.Settings.MediumRangeTarget);
+						var bestWeapon = SwitchWeapons.Settings.RangeUseLongestShortest ?
+							GetClosestRangeWeapon(SwitchWeapons.Settings.MediumRangeTarget) : 
+							GetBestDPSWeaponForRange(SwitchWeapons.Settings.MediumRangeTarget);
 						if (bestWeapon != null)
 						{
 							var pair = bestWeapon.toThingDefStuffDefPair();
@@ -309,7 +313,9 @@ namespace SwitchWeapons
 				case SwitchButtonEnum.ShortRange:
 					{
 						// Find highest DPS weapon for range
-						var bestWeapon = GetBestDPSWeaponForRange(SwitchWeapons.Settings.ShortRangeTarget);
+						var bestWeapon = SwitchWeapons.Settings.RangeUseLongestShortest ?
+							GetShortestRangeWeapon() : 
+							GetBestDPSWeaponForRange(SwitchWeapons.Settings.ShortRangeTarget);
 						if (bestWeapon != null)
 						{
 							var pair = bestWeapon.toThingDefStuffDefPair();
@@ -554,44 +560,71 @@ namespace SwitchWeapons
 			return currentPair;
 		}
 
-		private ThingWithComps GetBestDPSWeaponForRange(float range)
+		private ThingWithComps GetBestDPSWeaponForRange(float desiredRange)
+		{
+			// try finding highest dps at range
+			var output = GetRangedWeaponConditional((weapon, bestWeapon) =>
+				GetDPSDifferenceAtRange(weapon, bestWeapon, desiredRange) > 0);
+			// check for next highest range if no weapon of desired range found and setting is active
+			if (output == null && SwitchWeapons.Settings.RangeUseHighestIfNotFound)
+				output = GetRangedWeaponConditional((weapon, bestWeapon) =>
+					GetWeaponRange(weapon) is float range && range > 0f && (!(GetWeaponRange(bestWeapon) is float bestRange) || range > bestRange));
+			return output;
+		}
+		private ThingWithComps GetLongestRangeWeapon() =>
+			GetRangedWeaponConditional((weapon, bestWeapon) =>
+				GetWeaponRange(weapon) is float range 
+				&& (!(GetWeaponRange(bestWeapon) is float bestRange)
+					|| range > bestRange
+					|| (range == bestRange && GetDPSDifferenceAtRange(weapon, bestWeapon, range) > 0))
+			);
+		private ThingWithComps GetShortestRangeWeapon() =>
+			GetRangedWeaponConditional((weapon, bestWeapon) =>
+				GetWeaponRange(weapon) is float range
+				&& (!(GetWeaponRange(bestWeapon) is float bestRange)
+					|| range < bestRange
+					|| (range == bestRange && GetDPSDifferenceAtRange(weapon, bestWeapon, range) > 0)));
+		private ThingWithComps GetClosestRangeWeapon(float desiredRange) =>
+			GetRangedWeaponConditional(
+				(weapon, bestWeapon) =>
+				{
+					if (GetWeaponRange(weapon) is float range)
+					{
+						if (!(GetWeaponRange(bestWeapon) is float bestRange))
+							return true;
+
+						var diff = range - desiredRange;
+						var bestDiff = bestRange - desiredRange;
+						if ((diff >= 0f || bestDiff < 0f) && MathF.Abs(diff) < MathF.Abs(bestDiff))
+							return true;
+						// fall back to dps if multiple weapons of desired range are found
+						if (diff == bestDiff)
+							return GetDPSDifferenceAtRange(weapon, bestWeapon, range) > 0;
+					}
+					return false;
+				});
+		private ThingWithComps GetRangedWeaponConditional(Func<ThingWithComps, ThingWithComps, bool> comparison)
 		{
 			var bestWeapon = default(ThingWithComps);
-			var bestValue = 0f;
-			var carried = GetCurrentAndCarriedWeapons(_pawn).carried;
-			// Try finding weapon with highest DPS at range
-			foreach (var weapon in carried)
+			foreach (var weapon in GetCurrentAndCarriedWeapons(_pawn).carried)
 			{
 				if (weapon?.def?.IsRangedWeapon == true
 					&& !GettersFilters.isDangerousWeapon(weapon)
 					&& !GettersFilters.isEMPWeapon(weapon))
 				{
-					var dps = GetDPSAtRange(weapon, range);
-					if (dps > bestValue)
-					{
+					if (comparison(weapon, bestWeapon))
 						bestWeapon = weapon;
-						bestValue = dps;
-					}
-				}
-			}
-			// Find weapon with longest range possible if not weapon available with desired range
-			if (bestWeapon == null && SwitchWeapons.Settings.RangeUseHighestIfNotFound)
-			{
-				foreach (var weapon in carried)
-				{
-					if (weapon?.def?.IsRangedWeapon == true
-						&& !GettersFilters.isDangerousWeapon(weapon)
-						&& !GettersFilters.isEMPWeapon(weapon))
-					{
-						if (GetWeaponRange(weapon) is float rng && rng > bestValue)
-						{
-							bestWeapon = weapon;
-							bestValue = rng;
-						}
-					}
 				}
 			}
 			return bestWeapon;
+		}
+		private int GetDPSDifferenceAtRange(ThingWithComps weapon1, ThingWithComps weapon2, float range)
+		{
+			if (weapon1 == null)
+				return int.MinValue;
+			if (weapon2 == null)
+				return int.MaxValue;
+			return (int)MathF.Round(GetDPSAtRange(weapon1, range) - GetDPSAtRange(weapon2, range), MidpointRounding.AwayFromZero);
 		}
 
 		// Sort by market value (the same is also used by Simple Sidearms for sorting the UI display)
