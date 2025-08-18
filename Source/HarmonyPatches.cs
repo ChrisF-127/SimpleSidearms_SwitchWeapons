@@ -67,7 +67,7 @@ namespace SwitchWeapons
 		private static Gizmo_SwitchWeapon CreateSwitchWeaponGizmo(Pawn pawn)
 		{
 			if (pawn != null
-				&& pawn.Faction?.IsPlayer == true
+				&& pawn.IsColonistPlayerControlled
 				&& pawn.Drafted
 				&& !pawn.WorkTagIsDisabled(WorkTags.Violent))
 			{
