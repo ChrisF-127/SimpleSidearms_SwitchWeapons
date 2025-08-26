@@ -44,6 +44,10 @@
     <defName>SSSW_EMP</defName>
     <label>switch to EMP weapons</label>
   </KeyBindingDef>
+  <KeyBindingDef ParentName="SSSWKeyBinding">
+    <defName>SSSW_NonLethal</defName>
+    <label>switch to non-lethal weapons</label>
+  </KeyBindingDef>
   
   <KeyBindingDef ParentName="SSSWKeyBinding">
     <defName>SSSW_Next</defName>

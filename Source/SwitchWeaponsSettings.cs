@@ -29,10 +29,13 @@ namespace SwitchWeapons
 
 		public const bool Default_ShowDangerousSwitch = true;
 		public const bool Default_ShowEMPSwitch = true;
+		public const bool Default_ShowNonLethalSwitch = false;
 
 		public const bool Default_ShowPrevNextSwitch = true;
 		public const bool Default_PrevNextSortByRange = true;
-		public const bool Default_PrevNextSkipDangerousAndEMP = true;
+		public const bool Default_PrevNextSkipDangerous = true;
+		public const bool Default_PrevNextSkipEMP = true;
+		public const bool Default_PrevNextSkipNonLethal = true;
 		#endregion
 
 		#region PROPERTIES
@@ -52,10 +55,13 @@ namespace SwitchWeapons
 
 		public bool ShowDangerousSwitch { get; set; } = Default_ShowDangerousSwitch;
 		public bool ShowEMPSwitch { get; set; } = Default_ShowEMPSwitch;
+		public bool ShowNonLethalSwitch { get; set; } = Default_ShowNonLethalSwitch;
 
 		public bool ShowPrevNextSwitch { get; set; } = Default_ShowPrevNextSwitch;
 		public bool PrevNextSortByRange { get; set; } = Default_PrevNextSortByRange;
-		public bool PrevNextSkipDangerousAndEMP { get; set; } = Default_PrevNextSkipDangerousAndEMP;
+		public bool PrevNextSkipDangerous { get; set; } = Default_PrevNextSkipDangerous;
+		public bool PrevNextSkipEMP { get; set; } = Default_PrevNextSkipEMP;
+		public bool PrevNextSkipNonLethal { get; set; } = Default_PrevNextSkipNonLethal;
 		#endregion
 
 		#region PUBLIC METHODS
@@ -176,6 +182,13 @@ namespace SwitchWeapons
 					"SSSW_ShowEMPSwitchDesc".Translate(),
 					ShowEMPSwitch,
 					Default_ShowEMPSwitch);
+				ShowNonLethalSwitch = ControlsBuilder.CreateCheckbox(
+					ref offsetY,
+					width,
+					"SSSW_ShowNonLethalSwitch".Translate(),
+					"SSSW_ShowNonLethalSwitchDesc".Translate(),
+					ShowNonLethalSwitch,
+					Default_ShowNonLethalSwitch);
 
 				ShowPrevNextSwitch = ControlsBuilder.CreateCheckbox(
 					ref offsetY,
@@ -191,13 +204,27 @@ namespace SwitchWeapons
 					"SSSW_PrevNextSortByRangeDesc".Translate(),
 					PrevNextSortByRange,
 					Default_PrevNextSortByRange);
-				PrevNextSkipDangerousAndEMP = ControlsBuilder.CreateCheckbox(
+				PrevNextSkipDangerous = ControlsBuilder.CreateCheckbox(
 					ref offsetY,
 					width,
-					"SSSW_PrevNextSkipDangerousAndEMP".Translate(),
-					"SSSW_PrevNextSkipDangerousAndEMPDesc".Translate(),
-					PrevNextSkipDangerousAndEMP,
-					Default_PrevNextSkipDangerousAndEMP);
+					"SSSW_PrevNextSkipDangerous".Translate(),
+					"SSSW_PrevNextSkipDangerousDesc".Translate(),
+					PrevNextSkipDangerous,
+					Default_PrevNextSkipDangerous);
+				PrevNextSkipEMP = ControlsBuilder.CreateCheckbox(
+					ref offsetY,
+					width,
+					"SSSW_PrevNextSkipEMP".Translate(),
+					"SSSW_PrevNextSkipEMPDesc".Translate(),
+					PrevNextSkipEMP,
+					Default_PrevNextSkipEMP);
+				PrevNextSkipNonLethal = ControlsBuilder.CreateCheckbox(
+					ref offsetY,
+					width,
+					"SSSW_PrevNextSkipNonLethal".Translate(),
+					"SSSW_PrevNextSkipNonLethalDesc".Translate(),
+					PrevNextSkipNonLethal,
+					Default_PrevNextSkipNonLethal);
 			}
 			finally
 			{
@@ -252,6 +279,9 @@ namespace SwitchWeapons
 			boolValue = ShowEMPSwitch;
 			Scribe_Values.Look(ref boolValue, nameof(ShowEMPSwitch), Default_ShowEMPSwitch);
 			ShowEMPSwitch = boolValue;
+			boolValue = ShowNonLethalSwitch;
+			Scribe_Values.Look(ref boolValue, nameof(ShowNonLethalSwitch), Default_ShowNonLethalSwitch);
+			ShowNonLethalSwitch = boolValue;
 
 			boolValue = ShowPrevNextSwitch;
 			Scribe_Values.Look(ref boolValue, nameof(ShowPrevNextSwitch), Default_ShowPrevNextSwitch);
@@ -259,9 +289,15 @@ namespace SwitchWeapons
 			boolValue = PrevNextSortByRange;
 			Scribe_Values.Look(ref boolValue, nameof(PrevNextSortByRange), Default_PrevNextSortByRange);
 			PrevNextSortByRange = boolValue;
-			boolValue = PrevNextSkipDangerousAndEMP;
-			Scribe_Values.Look(ref boolValue, nameof(PrevNextSkipDangerousAndEMP), Default_PrevNextSkipDangerousAndEMP);
-			PrevNextSkipDangerousAndEMP = boolValue;
+			boolValue = PrevNextSkipDangerous;
+			Scribe_Values.Look(ref boolValue, nameof(PrevNextSkipDangerous), Default_PrevNextSkipDangerous);
+			PrevNextSkipDangerous = boolValue;
+			boolValue = PrevNextSkipEMP;
+			Scribe_Values.Look(ref boolValue, nameof(PrevNextSkipEMP), Default_PrevNextSkipEMP);
+			PrevNextSkipEMP = boolValue;
+			boolValue = PrevNextSkipNonLethal;
+			Scribe_Values.Look(ref boolValue, nameof(PrevNextSkipNonLethal), Default_PrevNextSkipNonLethal);
+			PrevNextSkipNonLethal = boolValue;
 		}
 		#endregion
 	}

@@ -52,6 +52,7 @@
     <Compile Include="SWKeyBindingDefOf.cs" />
     <Compile Include="SwitchWeapons.cs" />
     <Compile Include="TextureResources.cs" />
+    <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Krafs.Rimworld.Ref">

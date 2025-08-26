@@ -23,6 +23,7 @@ namespace SwitchWeapons
 
 		public static KeyBindingDef SSSW_Dangerous;
 		public static KeyBindingDef SSSW_EMP;
+		public static KeyBindingDef SSSW_NonLethal;
 
 		public static KeyBindingDef SSSW_Next;
 		public static KeyBindingDef SSSW_Previous;

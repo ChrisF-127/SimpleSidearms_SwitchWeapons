@@ -17,6 +17,7 @@
 	
 	<SSSW_Dangerous>Dangerous: force using explosives</SSSW_Dangerous>
 	<SSSW_EMP>EMP: force using EMP weapon</SSSW_EMP>
+	<SSSW_NonLethal>Non-lethal: force using non-lethal weapon</SSSW_NonLethal>
 	
 	<SSSW_Next>Next: switch to next weapon
 (if carrying multiple ranged or melee weapons)</SSSW_Next>
@@ -60,13 +61,23 @@
 	<SSSW_ShowEMPSwitch>Show EMP button</SSSW_ShowEMPSwitch>
 	<SSSW_ShowEMPSwitchDesc>Enable button for forcing pawns to use EMP weapons</SSSW_ShowEMPSwitchDesc>
 	
+	<SSSW_ShowNonLethalSwitch>Show non-lethal button</SSSW_ShowNonLethalSwitch>
+	<SSSW_ShowNonLethalSwitchDesc>Enable button for forcing pawns to use non-lethal weapons
+This button will default to using unarmed unless a mod is present which adds weapons using a "NonLethal"-WeaponTag, e.g. "Vanilla Weapons Expanded - Non-Lethal"</SSSW_ShowNonLethalSwitchDesc>
+	
 	<SSSW_ShowPrevNextSwitch>Show previous/next buttons</SSSW_ShowPrevNextSwitch>
 	<SSSW_ShowPrevNextSwitchDesc>Enable previous/next-buttons in UI which allow iterating through available weapons</SSSW_ShowPrevNextSwitchDesc>
 	
 	<SSSW_PrevNextSortByRange>Sort previous/next by range</SSSW_PrevNextSortByRange>
 	<SSSW_PrevNextSortByRangeDesc>Sorts weapons by range (and max. DPS if range is equal) when iterating via previous/next-buttons otherwise sorting goes by market value (similar to Simple Sidearms gizmo)</SSSW_PrevNextSortByRangeDesc>
 	
-	<SSSW_PrevNextSkipDangerousAndEMP>Previous/Next skips dangerous/EMP weapons</SSSW_PrevNextSkipDangerousAndEMP>
-	<SSSW_PrevNextSkipDangerousAndEMPDesc>Skips dangerous and EMP weapons when using previous/next-buttons if active</SSSW_PrevNextSkipDangerousAndEMPDesc>
+	<SSSW_PrevNextSkipDangerous>Previous/Next skips dangerous weapons</SSSW_PrevNextSkipDangerous>
+	<SSSW_PrevNextSkipDangerousDesc>Skip dangerous weapons when using previous/next-buttons</SSSW_PrevNextSkipDangerousDesc>
+	
+	<SSSW_PrevNextSkipEMP>Previous/Next skips EMP weapons</SSSW_PrevNextSkipEMP>
+	<SSSW_PrevNextSkipEMPDesc>Skip EMP weapons when using previous/next-buttons</SSSW_PrevNextSkipEMPDesc>
+	
+	<SSSW_PrevNextSkipNonLethal>Previous/Next skips non-lethal weapons</SSSW_PrevNextSkipNonLethal>
+	<SSSW_PrevNextSkipNonLethalDesc>Skip non-lethal weapons when using previous/next-buttons</SSSW_PrevNextSkipNonLethalDesc>
 
 </LanguageData>

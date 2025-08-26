@@ -24,6 +24,7 @@ namespace SwitchWeapons
 
 		public static readonly Texture2D Dangerous = ContentFinder<Texture2D>.Get("sssw_dangerous", true);
 		public static readonly Texture2D EMP = ContentFinder<Texture2D>.Get("sssw_emp", true);
+		public static readonly Texture2D NonLethal = ContentFinder<Texture2D>.Get("sssw_nonlethal", true);
 
 		public static readonly Texture2D Next = ContentFinder<Texture2D>.Get("sssw_next", true);
 		public static readonly Texture2D Previous = ContentFinder<Texture2D>.Get("sssw_previous", true);

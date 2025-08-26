@@ -31,6 +31,7 @@ namespace SwitchWeapons
 
 			Dangerous,
 			EMP,
+			NonLethal,
 
 			Next,
 			Previous,
@@ -100,13 +101,15 @@ namespace SwitchWeapons
 				rangeCount++;
 			if (SwitchWeapons.Settings.ShowShortRangeSwitch)
 				rangeCount++;
-			int deCount = 0;
+			int specialCount = 0;
 			if (SwitchWeapons.Settings.ShowDangerousSwitch)
-				deCount++;
+				specialCount++;
 			if (SwitchWeapons.Settings.ShowEMPSwitch)
-				deCount++;
+				specialCount++;
+			if (SwitchWeapons.Settings.ShowNonLethalSwitch)
+				specialCount++;
 
-			var defaultOnRow1 = rangeCount > 1 && deCount == 0;
+			var defaultOnRow1 = rangeCount > 1 && specialCount == 0;
 			var dangerOnRow0 = rangeCount == 0;
 
 			var column = defaultOnRow1 ? 1 : 2;
@@ -127,16 +130,23 @@ namespace SwitchWeapons
 			}
 
 			var row = dangerOnRow0 ? 0 : 1;
+			column = 2;
 			if (SwitchWeapons.Settings.ShowDangerousSwitch)
 			{
-				if (DrawButton(calcGridRect(2, row), TextureResources.Dangerous, new Color(0.8f, 0.4f, 0.4f), "SSSW_Dangerous", SWKeyBindingDefOf.SSSW_Dangerous))
+				if (DrawButton(calcGridRect(column, row), TextureResources.Dangerous, new Color(0.8f, 0.4f, 0.4f), "SSSW_Dangerous", SWKeyBindingDefOf.SSSW_Dangerous))
 					interaction = SwitchButtonEnum.Dangerous;
+				if (!dangerOnRow0)
+					column++;
 			}
-			column = !dangerOnRow0 && deCount > 1 ? 3 : 2;
 			if (SwitchWeapons.Settings.ShowEMPSwitch)
 			{
-				if (DrawButton(calcGridRect(column, 1), TextureResources.EMP, new Color(0.4f, 0.8f, 0.8f), "SSSW_EMP", SWKeyBindingDefOf.SSSW_EMP))
+				if (DrawButton(calcGridRect(column++, 1), TextureResources.EMP, new Color(0.4f, 0.8f, 0.8f), "SSSW_EMP", SWKeyBindingDefOf.SSSW_EMP))
 					interaction = SwitchButtonEnum.EMP;
+			}
+			if (SwitchWeapons.Settings.ShowNonLethalSwitch)
+			{
+				if (DrawButton(calcGridRect(column++, 1), TextureResources.NonLethal, new Color(0.8f, 0.4f, 0.8f), "SSSW_NonLethal", SWKeyBindingDefOf.SSSW_NonLethal))
+					interaction = SwitchButtonEnum.NonLethal;
 			}
 
 			column = defaultOnRow1 ? 2 : 1;
@@ -332,7 +342,7 @@ namespace SwitchWeapons
 
 				case SwitchButtonEnum.Dangerous:
 					{
-						// Find next dangerous weapon
+						// Find all dangerous weapons
 						var (current, carried) = GetCurrentAndCarriedWeapons(_pawn);
 
 						// All weapons to list
@@ -357,7 +367,7 @@ namespace SwitchWeapons
 					break;
 				case SwitchButtonEnum.EMP:
 					{
-						// Find next EMP weapon
+						// Find all EMP weapons
 						var (current, carried) = GetCurrentAndCarriedWeapons(_pawn);
 
 						// All weapons to list
@@ -377,6 +387,33 @@ namespace SwitchWeapons
 							// Switch to weapon
 							if (!SwitchTo(pair))
 								Log.Warning("Simple Sidearms - Switch Weapons: [EMP] switching to EMP failed");
+						}
+					}
+					break;
+				case SwitchButtonEnum.NonLethal:
+					{
+						// Find all non-lethal weapons
+						var (current, carried) = GetCurrentAndCarriedWeapons(_pawn);
+
+						// All weapons to list
+						var weapons = new List<ThingWithComps>();
+						foreach (var weapon in carried)
+						{
+							if (weapon.IsNonLethal())
+								weapons.Add(weapon);
+						}
+						if (weapons.Count == 0)
+							goto case SwitchButtonEnum.Unarmed;
+
+						// Find next
+						if (GetPrevNextFromList(current, weapons, true, SwitchWeapons.Settings.PrevNextSortByRange ? SortByEnum.Range : SortByEnum.MarketValue) is ThingDefStuffDefPair pair)
+						{
+							// Set weapon as forced so it sticks
+							memory.SetWeaponAsForced(pair, true);
+
+							// Switch to weapon
+							if (!SwitchTo(pair))
+								Log.Warning("Simple Sidearms - Switch Weapons: [NonLethal] switching to non-lethal failed");
 						}
 					}
 					break;
@@ -489,7 +526,7 @@ namespace SwitchWeapons
 
 			Func<ThingWithComps, bool> isValid;
 			// If skipping dangerous is disabled
-			if (!SwitchWeapons.Settings.PrevNextSkipDangerousAndEMP)
+			if (!SwitchWeapons.Settings.PrevNextSkipDangerous)
 				isValid = thing => true;
 			// ...otherwise if equipped weapon is dangerous, only dangerous weapons are valid
 			else if (GettersFilters.isDangerousWeapon(current))
